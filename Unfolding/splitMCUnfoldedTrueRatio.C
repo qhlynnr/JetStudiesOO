@@ -194,7 +194,7 @@ void splitMCUnfoldedTrueRatio(){
   unfoldClone_1->GetYaxis()->SetLabelSize(0.06);
   unfoldClone_1->GetYaxis()->SetTitleSize(0.08);
   unfoldClone_1->GetYaxis()->SetTitleOffset(0.55);
-  unfoldClone_1->GetYaxis()->SetRangeUser(0.8,1.2);
+  unfoldClone_1->GetYaxis()->SetRangeUser(0.9999,1.0001);
   unfoldClone_1->Draw();
   unfoldClone_2->Draw("same");
   unfoldClone_3->Draw("same");
@@ -204,6 +204,22 @@ void splitMCUnfoldedTrueRatio(){
   unfoldClone_7->Draw("same");
   unfoldClone_8->Draw("same");
   unfoldClone_9->Draw("same");
+
+  cout << "Unfolded/True ratio:" << endl;
+  for (int i = 1; i <= unfoldClone_1->GetNbinsX(); ++i) {
+    float ratio_Iter1 = unfoldClone_1->GetBinContent(i);
+    float ratio_Iter2 = unfoldClone_2->GetBinContent(i);
+    float ratio_Iter3 = unfoldClone_3->GetBinContent(i);
+    float ratio_Iter4 = unfoldClone_4->GetBinContent(i);
+    float ratio_Iter5 = unfoldClone_5->GetBinContent(i);
+    float ratio_Iter6 = unfoldClone_6->GetBinContent(i);
+    float ratio_Iter7 = unfoldClone_7->GetBinContent(i);
+    float ratio_Iter8 = unfoldClone_8->GetBinContent(i);
+    float ratio_Iter9 = unfoldClone_9->GetBinContent(i);
+    
+    cout << Form("Bin %d: Iteration 1 Ratio = %.4f, Iteration 2 Ratio = %.4f, Iteration 3 Ratio = %.4f, Iteration 4 Ratio = %.4f, Iteration 5 Ratio = %.4f, Iteration 6 Ratio = %.4f, Iteration 7 Ratio = %.4f, Iteration 8 Ratio = %.4f, Iteration 9 Ratio = %.4f", 
+                    i, ratio_Iter1, ratio_Iter2, ratio_Iter3, ratio_Iter4, ratio_Iter5, ratio_Iter6, ratio_Iter7, ratio_Iter8, ratio_Iter9) << endl;
+  }
 
   //effnum->Draw();
   TLegend* leg = new TLegend(0.7, 0.5, 0.9, 0.85);
@@ -223,7 +239,7 @@ void splitMCUnfoldedTrueRatio(){
   pad1->cd();
   leg->Draw("same");
 
-  c->SaveAs("unfoldingSplitTest.pdf");
+  c->SaveAs("unfoldingSplitTest.png");
 
 
 }
