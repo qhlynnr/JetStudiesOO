@@ -95,6 +95,26 @@ std::string FormatNEntriesLabel(int inputNum)
     return nentriesLabel;
 }
 
+void GenerateLogBins(){
+    int nBins = 6;
+    double xMin = 30.0;
+    double xMax = 1500.0;
+
+    std::vector<double> ptBins(nBins + 1);
+
+    double logMin = std::log10(xMin);
+    double logMax = std::log10(xMax);
+
+    for (int i = 0; i <= nBins; i++) {
+        double x = logMin + i * (logMax - logMin) / nBins;
+        ptBins[i] = std::pow(10, x);
+    }
+    cout << "Logarithmic bins: ";
+    for (const auto& bin : ptBins) {
+        cout << TMath::Nint(bin) << " ";
+    }
+    cout << endl;
+}
 
 int main() {
 
@@ -103,13 +123,15 @@ int main() {
     string DataString = "/eos/cms/store/group/phys_heavyions/hbossi/OOJetSubstructure/DataForests/IonPhysics0/OO_Data_PromptReco_IonPhsyics0/260306_195006/0000/*";
     /*************************************************************************
      *                                                                       *
-     *                      TUNABLE PARAMETERS SECTION                       *
+     *             TUNABLE PARAMETERS SECTION                                 *
      *                                                                       *
      *                                                                       *
      *************************************************************************/
     int nEventsCut = 0; // Set to 0 to process all events
+    int startfilenum = 0; // Set to 0 to start from the first file, or a positive integer to skip files
+    int fileCut = 50; // Set to -1 to process all files, or a positive integer to limit number of files
     bool MC = true;
-    string outfoldername = "0408Unfolding";
+    string outfoldername = "0414HalfHalfTest";
     string ForestFolder;
     if (MC) {
         ForestFolder = MCpthat15String;
@@ -117,14 +139,13 @@ int main() {
     else {
         ForestFolder = DataString;
     }
-    string outfiletag = "MC_CorrectVer";
+    string outfiletag = "MC_TrainSet_newbin_test";
     bool L1MinBiasBool = true;
     bool HLTMinBiasBool = false;
     bool JetTriggerBool = false;
     bool CCFilterBool = true;
     bool PVFilterBool = true;
     bool zvtxCutBool = true;
-    bool JetPtCutBool = false;
     bool JetSelectionsBool = true;
     bool HFEFilterBool = true;
 
@@ -212,24 +233,40 @@ int main() {
 
     double rgBins[] = {-0.05,0,0.02,0.04,0.06,0.08,0.10,0.12,0.2,0.3,0.4,0.5,0.6,0.8,1.0};
     double zgBins[] = {-0.05,0,0.02,0.04,0.06,0.08,0.10,0.12,0.2,0.3,0.4,0.5,0.6,0.8,1.0};
-    double ptBins[] = {0, 30, 50, 100, 200, 300, 500, 800, 1500,2000};
+    double ptBins[] = {0, 30, 60, 110, 210, 410, 780, 1500, 3000};
     const int nPtBins = sizeof(ptBins)/sizeof(double) - 1;
     const int nRgBins = sizeof(rgBins)/sizeof(double) - 1;
     const int nZgBins = sizeof(zgBins)/sizeof(double) - 1;
 
 
+    TH1::SetDefaultSumw2();
     TH1F* hGenPt = new TH1F("hGenPt", "Gen", nPtBins, ptBins);
     TH1F* hRecoPt  = new TH1F("hRecoPt",  "Reco",  nPtBins, ptBins);
     TH1F* hDataPt  = new TH1F("hDataPt",  "Measured data", nPtBins, ptBins);
+    TH1F* hFakePt  = new TH1F("hFakePt",  "Fake", nPtBins, ptBins);
+    TH1F* hMissPt  = new TH1F("hMissPt",  "Missed", nPtBins, ptBins);
 
+    TH1F* hMatchedRecoPt = new TH1F("hMatchedRecoPt", "Matched Reco", nPtBins, ptBins);
+    TH1F* hMatchedGenPt = new TH1F("hMatchedGenPt", "Matched Gen", nPtBins, ptBins);
     RooUnfoldResponse response_pt(hRecoPt, hGenPt);
+    
+    TH1F* hGenNoWeight = new TH1F("hGenNoWeight", "Gen No Weight", nPtBins, ptBins);
+    TH1F* hRecoNoWeight = new TH1F("hRecoNoWeight", "Reco No Weight", nPtBins, ptBins);
 
+    hGenPt->Sumw2();
+    hRecoPt->Sumw2();
+    
     auto start_time = std::chrono::high_resolution_clock::now();
 
-     for (size_t filenum = 0; filenum < rootFiles.size(); filenum++) {
+     for (size_t filenum = startfilenum; filenum < rootFiles.size(); filenum++) {
+            if (fileCut > 0 && filenum >= (size_t)fileCut) {
+                cout << "Reached file limit of " << fileCut << ". Stopping." << endl;
+                break;
+            }
         std::string path = rootFiles[filenum];
         std::string eosFileName = "root://eoscms.cern.ch/" + path;
         cout << "Processing file " << (filenum + 1) << " of " << rootFiles.size() << ": " << rootFiles[filenum] << endl;
+        cout << "Time elapsed: " << std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start_time).count() << " seconds" << endl;
         TFile *file = TFile::Open(eosFileName.c_str());
         if (!file || file->IsZombie()) {
             cout << "Error: cannot open file " << eosFileName << endl;
@@ -283,117 +320,21 @@ int main() {
         HiEvtAnalyzersTree->SetBranchStatus("*", 0); // Disable all branches
         PPTracksTree->SetBranchStatus("*", 0); // Disable all branches
 
-        HltTree->SetBranchStatus("L1_MinimumBiasHF1_OR_BptxAND", 1);
-        HltTree->SetBranchStatus("HLT_MinimumBiasHF_AND_BptxAND_v1", 1);
-        HltTree->SetBranchStatus("L1_SingleJet60", 1);
-        HltTree->SetBranchStatus("HLT_OxyL1SingleJet60_v1", 1);
-        SkimTree->SetBranchStatus("pclusterCompatibilityFilter", 1);
-        SkimTree->SetBranchStatus("pprimaryVertexFilter", 1);
-        HiEvtAnalyzersTree->SetBranchStatus("hiHFMinus_pf", 1);
-        HiEvtAnalyzersTree->SetBranchStatus("hiHFEPlus_pf", 1);
-        if (MC){
-            HiEvtAnalyzersTree->SetBranchStatus("pthat", 1);
-            HiEvtAnalyzersTree->SetBranchStatus("weight", 1);
-        }
-        PPTracksTree->SetBranchStatus("nVtx", 1);
-        PPTracksTree->SetBranchStatus("xVtx", 1);
-        PPTracksTree->SetBranchStatus("yVtx", 1);
-        PPTracksTree->SetBranchStatus("zVtx", 1);
-        PPTracksTree->SetBranchStatus("xErrVtx", 1);
-        PPTracksTree->SetBranchStatus("yErrVtx", 1);
-        PPTracksTree->SetBranchStatus("zErrVtx", 1);
-        JetAnalyserTree->SetBranchStatus("*", 0);
-
-        JetAnalyserTree->SetBranchStatus("run", 1);
-        JetAnalyserTree->SetBranchStatus("evt", 1);
-        JetAnalyserTree->SetBranchStatus("lumi", 1);
-        JetAnalyserTree->SetBranchStatus("nref", 1);
-
-        JetAnalyserTree->SetBranchStatus("rawpt", 1);
-        JetAnalyserTree->SetBranchStatus("jtpt", 1);
-        JetAnalyserTree->SetBranchStatus("jteta", 1);
-        JetAnalyserTree->SetBranchStatus("jtphi", 1);
-        JetAnalyserTree->SetBranchStatus("jty", 1);
-        JetAnalyserTree->SetBranchStatus("jtrg", 1);
-        JetAnalyserTree->SetBranchStatus("jtzg", 1);
-        JetAnalyserTree->SetBranchStatus("jtkt", 1);
-        JetAnalyserTree->SetBranchStatus("jtangu", 1);
-
-        JetAnalyserTree->SetBranchStatus("jtPfCHF", 1);
-        JetAnalyserTree->SetBranchStatus("jtPfNHF", 1);
-        JetAnalyserTree->SetBranchStatus("jtPfCEF", 1);
-        JetAnalyserTree->SetBranchStatus("jtPfNEF", 1);
-        JetAnalyserTree->SetBranchStatus("jtPfMUF", 1);
-        JetAnalyserTree->SetBranchStatus("jtPfCHM", 1);
-
-        if (MC) {
-            JetAnalyserTree->SetBranchStatus("ngen", 1);
-            JetAnalyserTree->SetBranchStatus("refpt", 1);
-            JetAnalyserTree->SetBranchStatus("refeta", 1);
-            JetAnalyserTree->SetBranchStatus("refphi", 1);
-            JetAnalyserTree->SetBranchStatus("refy", 1);
-            JetAnalyserTree->SetBranchStatus("refrg", 1);
-            JetAnalyserTree->SetBranchStatus("refzg", 1);
-            JetAnalyserTree->SetBranchStatus("refkt", 1);
-            JetAnalyserTree->SetBranchStatus("refangu", 1);
-
-            JetAnalyserTree->SetBranchStatus("genpt", 1);
-            JetAnalyserTree->SetBranchStatus("geneta", 1);
-            JetAnalyserTree->SetBranchStatus("genphi", 1);
-            JetAnalyserTree->SetBranchStatus("geny", 1);
-            JetAnalyserTree->SetBranchStatus("genrg", 1);
-            JetAnalyserTree->SetBranchStatus("genzg", 1);
-            JetAnalyserTree->SetBranchStatus("genkt", 1);
-            JetAnalyserTree->SetBranchStatus("genangu", 1);
-            JetAnalyserTree->SetBranchStatus("genmatchindex", 1);
-        }
-
-
-        JetAnalyserTree->SetBranchAddress("run",&run);
-        JetAnalyserTree->SetBranchAddress("evt",&evt);
-        JetAnalyserTree->SetBranchAddress("nref",&nref);
-        JetAnalyserTree->SetBranchAddress("lumi",&lumi);
-
-        JetAnalyserTree->SetBranchAddress("rawpt",rawpt);
-
-        JetAnalyserTree->SetBranchAddress("jtpt",jtpt);
-        JetAnalyserTree->SetBranchAddress("jteta",jteta);
-        JetAnalyserTree->SetBranchAddress("jtphi",jtphi);
-        JetAnalyserTree->SetBranchAddress("jty",jty);
-        JetAnalyserTree->SetBranchAddress("jtrg",jtrg);
-        JetAnalyserTree->SetBranchAddress("jtzg",jtzg);
-        JetAnalyserTree->SetBranchAddress("jtkt",jtkt);
-        JetAnalyserTree->SetBranchAddress("jtangu",jtangu);
+        auto Enable = [](TTree* t, const vector<string>& branches){
+            for (auto& b : branches) t->SetBranchStatus(b.c_str(), 1);
+        };
         
-        if(MC){
-            JetAnalyserTree->SetBranchAddress("refpt",refpt);
-            JetAnalyserTree->SetBranchAddress("refeta",refeta);
-            JetAnalyserTree->SetBranchAddress("refphi",refphi);
-            JetAnalyserTree->SetBranchAddress("refrg",refrg);
-            JetAnalyserTree->SetBranchAddress("refzg",refzg);
-            JetAnalyserTree->SetBranchAddress("refy",refy);
-            JetAnalyserTree->SetBranchAddress("refkt",refkt);
-            JetAnalyserTree->SetBranchAddress("refangu",refangu);
-
-            JetAnalyserTree->SetBranchAddress("genpt",genpt);
-            JetAnalyserTree->SetBranchAddress("geneta",geneta);
-            JetAnalyserTree->SetBranchAddress("genphi",genphi);
-            JetAnalyserTree->SetBranchAddress("geny",geny);
-            JetAnalyserTree->SetBranchAddress("genrg",genrg);
-            JetAnalyserTree->SetBranchAddress("genzg",genzg);
-            JetAnalyserTree->SetBranchAddress("genkt",genkt);
-            JetAnalyserTree->SetBranchAddress("genangu",genangu);
-            JetAnalyserTree->SetBranchAddress("ngen",&ngen);
-            JetAnalyserTree->SetBranchAddress("genmatchindex",genmatchindex);
-
+        Enable(HltTree, {"L1_MinimumBiasHF1_OR_BptxAND", "HLT_MinimumBiasHF_AND_BptxAND_v1", "L1_SingleJet60", "HLT_OxyL1SingleJet60_v1"});
+        Enable(SkimTree, {"pclusterCompatibilityFilter", "pprimaryVertexFilter"});
+        Enable(HiEvtAnalyzersTree, {"hiHFMinus_pf", "hiHFEPlus_pf"});
+        Enable(PPTracksTree, {"nVtx", "xVtx", "yVtx", "zVtx", "xErrVtx", "yErrVtx", "zErrVtx"});
+        Enable(JetAnalyserTree, {"run", "evt", "lumi", "nref", "rawpt", "jtpt", "jteta", "jtphi", "jty", "jtrg", "jtzg", "jtkt", "jtangu",
+                                "jtPfCHF", "jtPfNHF", "jtPfCEF", "jtPfNEF", "jtPfMUF", "jtPfCHM"});
+        if (MC){
+            Enable(HiEvtAnalyzersTree, {"ngen", "refpt", "refeta", "refphi", "refy", "refrg", "refzg", "refkt", "refangu",
+                                     "genpt", "geneta", "genphi", "geny", "genrg", "genzg", "genkt", "genangu", "genmatchindex"});
+            Enable(HiEvtAnalyzersTree, {"pthat", "weight"});
         }
-
-        JetAnalyserTree->SetBranchAddress("jtPfCHF",jtPfCHF);
-        JetAnalyserTree->SetBranchAddress("jtPfNHF",jtPfNHF);
-        JetAnalyserTree->SetBranchAddress("jtPfCEF",jtPfCEF);
-        JetAnalyserTree->SetBranchAddress("jtPfNEF",jtPfNEF);
-        JetAnalyserTree->SetBranchAddress("jtPfMUF",jtPfMUF);
-        JetAnalyserTree->SetBranchAddress("jtPfCHM",jtPfCHM);
 
         HltTree->SetBranchAddress("L1_MinimumBiasHF1_OR_BptxAND",&L1_MinimumBiasHF1_OR_BptxAND);
         HltTree->SetBranchAddress("HLT_MinimumBiasHF_AND_BptxAND_v1",&HLT_MinimumBiasHF_AND_BptxAND_v1);
@@ -424,6 +365,7 @@ int main() {
 
         Long64_t nEntries = PPTracksTree->GetEntries();        
 
+        
         for (Long64_t entrynum = 0; entrynum < nEntries; entrynum++){
             SkimTree->GetEntry(entrynum);
             HltTree->GetEntry(entrynum);
@@ -468,17 +410,24 @@ int main() {
                 if (MC){
                     double reco_pt = jtpt[j];
                     double ref_matched_pt = refpt[j];
-                    if (reco_pt > jtptCut) {
+                    bool recoPass = reco_pt > jtptCut;
+                    bool genPass  = ref_matched_pt > jtptCut;
+                    if (recoPass) {
                         hRecoPt->Fill(reco_pt, weight);
+                        hRecoNoWeight->Fill(reco_pt);
                     }
-                    if (reco_pt > jtptCut && ref_matched_pt > jtptCut) {
+                    if (recoPass && genPass) {
                         nMatch++;
+                        hMatchedRecoPt->Fill(reco_pt, weight);
+                        hMatchedGenPt->Fill(ref_matched_pt, weight);
                     //    cout << "✓ MATCHED: " << Form("%14.2f    |    %14.2f", reco_pt, ref_matched_pt) << endl;
                         response_pt.Fill(reco_pt, ref_matched_pt, weight);  // ✓ MATCHED
-                    } else if (reco_pt > jtptCut && ref_matched_pt <= jtptCut) {
+                    } else if (recoPass && !genPass) {
                         nFake++;
-                    //    cout << "✓ FAKE: " << Form("%14.2f    |    %14.2f", reco_pt, ref_matched_pt) << endl;
-                        response_pt.Fake(reco_pt, weight);                // ✓ FAKE
+                       // cout << "✓ FAKE: " << Form(" reco pt: %14.2f    |    ref pt: %14.2f    |    reco η: %7.3f    reco φ: %7.3f    |    ref η: %7.3f    ref φ: %7.3f",
+                                               //    reco_pt, ref_matched_pt, jteta[j], jtphi[j], refeta[j], refphi[j]) << endl;
+                        hFakePt->Fill(reco_pt, weight);
+                       // response_pt.Fake(reco_pt, weight);                // ✓ FAKE
                     }
                 }
                 if (!MC){
@@ -493,20 +442,18 @@ int main() {
                     double gen_pt = genpt[j];
                     if (gen_pt > jtptCut) {
                         hGenPt->Fill(gen_pt, weight);
+                        hGenNoWeight->Fill(gen_pt);
                     }
-                    if ((gen_pt > jtptCut && (genmatchindex[j] < 0 || jtpt[genmatchindex[j]] < jtptCut)) ) {
+                    if ((gen_pt > jtptCut && (genmatchindex[j] < 0 || jtpt[genmatchindex[j]] < jtptCut)
+                        && jtPfNEF[genmatchindex[j]] <= jtPfNEFcut && jtPfMUF[genmatchindex[j]] <= jtPfMUFcut && jtPfCHM[genmatchindex[j]] >= jtPfCHMcut)
+                     ) {
+                        hMissPt->Fill(gen_pt, weight);
                         nMiss++;
-                        if (genmatchindex[j] >= 0) {
-                        //    cout << "✓ MISSED: " << Form("%14.2f    |    %14.2f    |    %14.2f", jtpt[genmatchindex[j]], refpt[genmatchindex[j]], gen_pt) << endl;
-                        }
-                        else {
-                        //    cout << "✓ MISSED: " << Form("No reco match    |    %14.2f", gen_pt) << endl;
-                        }
-                        response_pt.Miss(gen_pt, weight);                // ✓ MISSED
+                        //response_pt.Miss(gen_pt, weight);                // ✓ MISSED
                     }
                 }
             }
-
+    
             if (nEvents > nEventsCut && nEventsCut != 0){
                 cout << Form("Debug mode: stopping after %d entries.", nEventsCut) << endl;
                 break;
@@ -602,13 +549,19 @@ int main() {
 
     if (MC) {
         hGenPt->Write();
+        hGenNoWeight->Write();
         hRecoPt->Write();
+        hRecoNoWeight->Write();
+        hMatchedRecoPt->Write();
+        hMatchedGenPt->Write();
+        hFakePt->Write();
+        hMissPt->Write();
         response_pt.Write("response_pt");
     }
     else {
         hDataPt->Write();
     }
-
+    cout << "Output written to: " << outFileName << endl;
     delete outFile;
     return 0;
 }

@@ -6,7 +6,7 @@ ROOUNFOLD_DIR := /home/data/public/xirong/Packages/RooUnfold/
 ROOUNFOLD_LIBS = -L$(ROOUNFOLD_DIR) -lRooUnfold
 
 CXX := g++
-TARGET := Unfolding_data
+TARGET := Unfolding_MC
 ROOTCFLAGS := $(shell root-config --cflags)
 ROOTLIBS   := $(shell root-config --glibs)
 OPT_FLAGS := -O3

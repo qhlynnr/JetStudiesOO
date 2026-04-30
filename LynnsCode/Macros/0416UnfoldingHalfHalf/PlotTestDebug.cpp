@@ -23,7 +23,7 @@ void CheckFileExist(T* obj, const std::string& filename = "") {
 int PlotTestDebug(){
     gStyle->SetOptStat(0);
 
-    string MCFile = "/home/xirong/JetStudiesOO/LynnsCode/RootFiles/0428DebugTrivial/Response_MC_1.2MEvts_MC_10Files_NewBin_debug_20260428.root";
+    string MCFile = "/home/data/public/xirong/PublicDebugFiles/Response_MC_1.2MEvts_MC_10Files_NewBin_debug_20260428.root";
     TFile *MCFilef = TFile::Open(MCFile.c_str(), "READ");
     CheckFileExist(MCFilef, MCFile);
     TH1F* hGenPt = (TH1F*)MCFilef->Get("hGenPt");
@@ -54,14 +54,24 @@ int PlotTestDebug(){
     CheckFileExist(hMatchedRecoPt2, "hMatchedRecoPt2");
     TH1F* hMatchedGenPt2 = (TH1F*)MCFilef->Get("hMatchedGenPt2");
     CheckFileExist(hMatchedGenPt2, "hMatchedGenPt2");
+
     RooUnfoldResponse* response_pt = (RooUnfoldResponse*)MCFilef->Get("response_pt");
     
     TH1F* hGenResponse = (TH1F*)response_pt->Htruth();
     CheckFileExist(hGenResponse, "hGenResponse");
     TH1F* hRecoResponse = (TH1F*)response_pt->Hmeasured();
-    CheckFileExist(hRecoResponse, "hRecoResponse");   
+    CheckFileExist(hRecoResponse, "hRecoResponse");  
 
-    RooUnfoldBayes unfold(response_pt, hRecoResponse, 10);
+    for (int i = 1; i <= hGenResponse->GetNbinsX(); ++i) {
+      float gen_value = hGenResponse->GetBinContent(i);
+      float reco_value = hRecoResponse->GetBinContent(i);
+      float gen_matched = hMatchedGenPt->GetBinContent(i);
+      float reco_matched = hMatchedRecoPt->GetBinContent(i);
+      cout << "Bin " << i << ": Gen Response = " << gen_value/(gen_matched > 0 ? gen_matched : 1) 
+           << ", Reco Response = " << reco_value/(reco_matched > 0 ? reco_matched : 1) << endl;
+    }
+    
+    RooUnfoldBayes unfold(response_pt, hRecoResponse, 2);
     TH1F* hUnfolded_trivial = (TH1F*)unfold.Hunfold()->Clone("hUnfolded_trivial");
 
     cout << "Trivial Unfolding ratio (UnfoldedGen / ResponseGen) values:" << endl;
@@ -70,7 +80,7 @@ int PlotTestDebug(){
       float unfolded_gen = hUnfolded_trivial->GetBinContent(i);
       float gen_value = hGenResponse->GetBinContent(i);
 
-      cout << "Bin" << i << " Ratio = " << (gen_value > 0 ? unfolded_gen / gen_value : 0) << endl;
+      cout << "Bin" << i << " Ratio = " << unfolded_gen/gen_value << " (UnfoldedGen: " << unfolded_gen << ", ResponseGen: " << gen_value << ")" << endl;
     }
 
     return 0;

@@ -5,7 +5,7 @@
 #include <vector>
 #include <TMath.h>
 #include <TCanvas.h>
-#include <TH1F.h>
+#include <TH1D.h>
 #include <TChain.h>
 #include <TStyle.h>
 #include <TNamed.h>
@@ -242,28 +242,27 @@ int main() {
  //   double ptBins[] = {0,20,40,60,80,100,120,140,160,180,200,250,300,350,400,450,500,600,700,800,900,1000,1100,1200,1300,1400,1500};
     const int nPtBins = sizeof(ptBins)/sizeof(double) - 1;
 
-
     TH1::SetDefaultSumw2();
-    TH1F* hGenPt = new TH1F("hGenPt", "Gen", nPtBins, ptBins);
-    TH1F* hRecoPt  = new TH1F("hRecoPt",  "Reco",  nPtBins, ptBins);
-    TH1F* hFakePt  = new TH1F("hFakePt",  "Fake", nPtBins, ptBins);
-    TH1F* hMissPt  = new TH1F("hMissPt",  "Missed", nPtBins, ptBins);
+    TH1D* hGenPt = new TH1D("hGenPt", "Gen", nPtBins, ptBins);
+    TH1D* hRecoPt  = new TH1D("hRecoPt",  "Reco",  nPtBins, ptBins);
+    TH1D* hFakePt  = new TH1D("hFakePt",  "Fake", nPtBins, ptBins);
+    TH1D* hMissPt  = new TH1D("hMissPt",  "Missed", nPtBins, ptBins);
 
-    TH1F* hMatchedRecoPt = new TH1F("hMatchedRecoPt", "Matched Reco", nPtBins, ptBins);
-    TH1F* hMatchedGenPt = new TH1F("hMatchedGenPt", "Matched Gen", nPtBins, ptBins);
-    RooUnfoldResponse response_pt(hRecoPt, hGenPt);
+    TH1D* hMatchedRecoPt = new TH1D("hMatchedRecoPt", "Matched Reco", nPtBins, ptBins);
+    TH1D* hMatchedGenPt = new TH1D("hMatchedGenPt", "Matched Gen", nPtBins, ptBins);
+    RooUnfoldResponse response_pt("hResponsePt", "Response matrix for pt", nPtBins, ptBins, nPtBins, ptBins);
     
-    TH1F* hGenNoWeight = new TH1F("hGenNoWeight", "Gen No Weight", nPtBins, ptBins);
-    TH1F* hRecoNoWeight = new TH1F("hRecoNoWeight", "Reco No Weight", nPtBins, ptBins);
+    TH1D* hGenNoWeight = new TH1D("hGenNoWeight", "Gen No Weight", nPtBins, ptBins);
+    TH1D* hRecoNoWeight = new TH1D("hRecoNoWeight", "Reco No Weight", nPtBins, ptBins);
 
-    TH1F* hGenPt2 = new TH1F("hGenPt2", "Gen 2", nPtBins, ptBins);
-    TH1F* hRecoPt2  = new TH1F("hRecoPt2",  "Reco 2",  nPtBins, ptBins);
-    TH1F* hFakePt2  = new TH1F("hFakePt2",  "Fake 2", nPtBins, ptBins);
-    TH1F* hMissPt2  = new TH1F("hMissPt2",  "Missed 2", nPtBins, ptBins);
-    TH1F* hMatchedRecoPt2 = new TH1F("hMatchedRecoPt2", "Matched Reco 2", nPtBins, ptBins);
-    TH1F* hMatchedGenPt2 = new TH1F("hMatchedGenPt2", "Matched Gen 2", nPtBins, ptBins);
-    TH1F* hGenNoWeight2 = new TH1F("hGenNoWeight2", "Gen No Weight 2", nPtBins, ptBins);
-    TH1F* hRecoNoWeight2 = new TH1F("hRecoNoWeight2", "Reco No Weight 2", nPtBins, ptBins);
+    TH1D* hGenPt2 = new TH1D("hGenPt2", "Gen 2", nPtBins, ptBins);
+    TH1D* hRecoPt2  = new TH1D("hRecoPt2",  "Reco 2",  nPtBins, ptBins);
+    TH1D* hFakePt2  = new TH1D("hFakePt2",  "Fake 2", nPtBins, ptBins);
+    TH1D* hMissPt2  = new TH1D("hMissPt2",  "Missed 2", nPtBins, ptBins);
+    TH1D* hMatchedRecoPt2 = new TH1D("hMatchedRecoPt2", "Matched Reco 2", nPtBins, ptBins);
+    TH1D* hMatchedGenPt2 = new TH1D("hMatchedGenPt2", "Matched Gen 2", nPtBins, ptBins);
+    TH1D* hGenNoWeight2 = new TH1D("hGenNoWeight2", "Gen No Weight 2", nPtBins, ptBins);
+    TH1D* hRecoNoWeight2 = new TH1D("hRecoNoWeight2", "Reco No Weight 2", nPtBins, ptBins);
 
     hGenPt->Sumw2();
     hRecoPt->Sumw2();

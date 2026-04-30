@@ -1,0 +1,107 @@
+The system clock is currently at Fri Apr 17 16:18:20 2026
+Scanning directory: /eos/cms/store/group/phys_heavyions/hbossi/mc_productions/QCD-dijet_pThat15-event-weighted_TuneCP5_5p36TeV_pythia8/OO_MC_DijetEmbedded_pThat-15to1200_TuneCP5_5p36TeV_pythia8/260306_002843/0000 for files matching pattern: *
+Found 817 ROOT files matching pattern: /eos/cms/store/group/phys_heavyions/hbossi/mc_productions/QCD-dijet_pThat15-event-weighted_TuneCP5_5p36TeV_pythia8/OO_MC_DijetEmbedded_pThat-15to1200_TuneCP5_5p36TeV_pythia8/260306_002843/0000/*
+Number of ROOT files to process: 817
+Processing file 1 of 817: /eos/cms/store/group/phys_heavyions/hbossi/mc_productions/QCD-dijet_pThat15-event-weighted_TuneCP5_5p36TeV_pythia8/OO_MC_DijetEmbedded_pThat-15to1200_TuneCP5_5p36TeV_pythia8/260306_002843/0000/HiForestMiniAOD_1.root
+Time elapsed: 0 seconds
+File Contains: 145000 entries.
+NMiss: 5231 | NFake: 17358 | NMatch: 191811
+Processing file 2 of 817: /eos/cms/store/group/phys_heavyions/hbossi/mc_productions/QCD-dijet_pThat15-event-weighted_TuneCP5_5p36TeV_pythia8/OO_MC_DijetEmbedded_pThat-15to1200_TuneCP5_5p36TeV_pythia8/260306_002843/0000/HiForestMiniAOD_10.root
+Time elapsed: 13 seconds
+File Contains: 129000 entries.
+NMiss: 9985 | NFake: 32438 | NMatch: 362511
+Processing file 3 of 817: /eos/cms/store/group/phys_heavyions/hbossi/mc_productions/QCD-dijet_pThat15-event-weighted_TuneCP5_5p36TeV_pythia8/OO_MC_DijetEmbedded_pThat-15to1200_TuneCP5_5p36TeV_pythia8/260306_002843/0000/HiForestMiniAOD_100.root
+Time elapsed: 28 seconds
+File Contains: 106000 entries.
+NMiss: 13749 | NFake: 45041 | NMatch: 502478
+Processing file 4 of 817: /eos/cms/store/group/phys_heavyions/hbossi/mc_productions/QCD-dijet_pThat15-event-weighted_TuneCP5_5p36TeV_pythia8/OO_MC_DijetEmbedded_pThat-15to1200_TuneCP5_5p36TeV_pythia8/260306_002843/0000/HiForestMiniAOD_101.root
+Time elapsed: 34 seconds
+File Contains: 113000 entries.
+NMiss: 17699 | NFake: 58256 | NMatch: 651728
+Processing file 5 of 817: /eos/cms/store/group/phys_heavyions/hbossi/mc_productions/QCD-dijet_pThat15-event-weighted_TuneCP5_5p36TeV_pythia8/OO_MC_DijetEmbedded_pThat-15to1200_TuneCP5_5p36TeV_pythia8/260306_002843/0000/HiForestMiniAOD_102.root
+Time elapsed: 73 seconds
+File Contains: 112000 entries.
+NMiss: 21651 | NFake: 71369 | NMatch: 799776
+Processing file 6 of 817: /eos/cms/store/group/phys_heavyions/hbossi/mc_productions/QCD-dijet_pThat15-event-weighted_TuneCP5_5p36TeV_pythia8/OO_MC_DijetEmbedded_pThat-15to1200_TuneCP5_5p36TeV_pythia8/260306_002843/0000/HiForestMiniAOD_103.root
+Time elapsed: 95 seconds
+File Contains: 154000 entries.
+NMiss: 27359 | NFake: 89719 | NMatch: 1002449
+Processing file 7 of 817: /eos/cms/store/group/phys_heavyions/hbossi/mc_productions/QCD-dijet_pThat15-event-weighted_TuneCP5_5p36TeV_pythia8/OO_MC_DijetEmbedded_pThat-15to1200_TuneCP5_5p36TeV_pythia8/260306_002843/0000/HiForestMiniAOD_104.root
+Time elapsed: 130 seconds
+File Contains: 92000 entries.
+NMiss: 30532 | NFake: 100554 | NMatch: 1123879
+Processing file 8 of 817: /eos/cms/store/group/phys_heavyions/hbossi/mc_productions/QCD-dijet_pThat15-event-weighted_TuneCP5_5p36TeV_pythia8/OO_MC_DijetEmbedded_pThat-15to1200_TuneCP5_5p36TeV_pythia8/260306_002843/0000/HiForestMiniAOD_105.root
+Time elapsed: 151 seconds
+File Contains: 136000 entries.
+NMiss: 35457 | NFake: 116649 | NMatch: 1303623
+Processing file 9 of 817: /eos/cms/store/group/phys_heavyions/hbossi/mc_productions/QCD-dijet_pThat15-event-weighted_TuneCP5_5p36TeV_pythia8/OO_MC_DijetEmbedded_pThat-15to1200_TuneCP5_5p36TeV_pythia8/260306_002843/0000/HiForestMiniAOD_106.root
+Time elapsed: 172 seconds
+File Contains: 127000 entries.
+NMiss: 39949 | NFake: 131612 | NMatch: 1471192
+Processing file 10 of 817: /eos/cms/store/group/phys_heavyions/hbossi/mc_productions/QCD-dijet_pThat15-event-weighted_TuneCP5_5p36TeV_pythia8/OO_MC_DijetEmbedded_pThat-15to1200_TuneCP5_5p36TeV_pythia8/260306_002843/0000/HiForestMiniAOD_107.root
+Time elapsed: 194 seconds
+File Contains: 120000 entries.
+NMiss: 44273 | NFake: 145823 | NMatch: 1630288
+Processing file 11 of 817: /eos/cms/store/group/phys_heavyions/hbossi/mc_productions/QCD-dijet_pThat15-event-weighted_TuneCP5_5p36TeV_pythia8/OO_MC_DijetEmbedded_pThat-15to1200_TuneCP5_5p36TeV_pythia8/260306_002843/0000/HiForestMiniAOD_108.root
+Time elapsed: 221 seconds
+File Contains: 119000 entries.
+NMiss: 48470 | NFake: 159939 | NMatch: 1787088
+Processing file 12 of 817: /eos/cms/store/group/phys_heavyions/hbossi/mc_productions/QCD-dijet_pThat15-event-weighted_TuneCP5_5p36TeV_pythia8/OO_MC_DijetEmbedded_pThat-15to1200_TuneCP5_5p36TeV_pythia8/260306_002843/0000/HiForestMiniAOD_109.root
+Time elapsed: 240 seconds
+File Contains: 127000 entries.
+NMiss: 53094 | NFake: 174981 | NMatch: 1955290
+Processing file 13 of 817: /eos/cms/store/group/phys_heavyions/hbossi/mc_productions/QCD-dijet_pThat15-event-weighted_TuneCP5_5p36TeV_pythia8/OO_MC_DijetEmbedded_pThat-15to1200_TuneCP5_5p36TeV_pythia8/260306_002843/0000/HiForestMiniAOD_11.root
+Time elapsed: 260 seconds
+File Contains: 138000 entries.
+NMiss: 58027 | NFake: 191181 | NMatch: 2138427
+Processing file 14 of 817: /eos/cms/store/group/phys_heavyions/hbossi/mc_productions/QCD-dijet_pThat15-event-weighted_TuneCP5_5p36TeV_pythia8/OO_MC_DijetEmbedded_pThat-15to1200_TuneCP5_5p36TeV_pythia8/260306_002843/0000/HiForestMiniAOD_110.root
+Time elapsed: 290 seconds
+File Contains: 167000 entries.
+NMiss: 64048 | NFake: 210859 | NMatch: 2358479
+Processing file 15 of 817: /eos/cms/store/group/phys_heavyions/hbossi/mc_productions/QCD-dijet_pThat15-event-weighted_TuneCP5_5p36TeV_pythia8/OO_MC_DijetEmbedded_pThat-15to1200_TuneCP5_5p36TeV_pythia8/260306_002843/0000/HiForestMiniAOD_111.root
+Time elapsed: 320 seconds
+File Contains: 125000 entries.
+NMiss: 68427 | NFake: 225413 | NMatch: 2523708
+Processing file 16 of 817: /eos/cms/store/group/phys_heavyions/hbossi/mc_productions/QCD-dijet_pThat15-event-weighted_TuneCP5_5p36TeV_pythia8/OO_MC_DijetEmbedded_pThat-15to1200_TuneCP5_5p36TeV_pythia8/260306_002843/0000/HiForestMiniAOD_112.root
+Time elapsed: 341 seconds
+File Contains: 135000 entries.
+NMiss: 73062 | NFake: 241194 | NMatch: 2702275
+Processing file 17 of 817: /eos/cms/store/group/phys_heavyions/hbossi/mc_productions/QCD-dijet_pThat15-event-weighted_TuneCP5_5p36TeV_pythia8/OO_MC_DijetEmbedded_pThat-15to1200_TuneCP5_5p36TeV_pythia8/260306_002843/0000/HiForestMiniAOD_113.root
+Time elapsed: 370 seconds
+File Contains: 96000 entries.
+NMiss: 76443 | NFake: 252603 | NMatch: 2828898
+Processing file 18 of 817: /eos/cms/store/group/phys_heavyions/hbossi/mc_productions/QCD-dijet_pThat15-event-weighted_TuneCP5_5p36TeV_pythia8/OO_MC_DijetEmbedded_pThat-15to1200_TuneCP5_5p36TeV_pythia8/260306_002843/0000/HiForestMiniAOD_114.root
+Time elapsed: 384 seconds
+File Contains: 140000 entries.
+NMiss: 81521 | NFake: 269348 | NMatch: 3014473
+Processing file 19 of 817: /eos/cms/store/group/phys_heavyions/hbossi/mc_productions/QCD-dijet_pThat15-event-weighted_TuneCP5_5p36TeV_pythia8/OO_MC_DijetEmbedded_pThat-15to1200_TuneCP5_5p36TeV_pythia8/260306_002843/0000/HiForestMiniAOD_115.root
+Time elapsed: 417 seconds
+File Contains: 152000 entries.
+NMiss: 87017 | NFake: 287324 | NMatch: 3215408
+Processing file 20 of 817: /eos/cms/store/group/phys_heavyions/hbossi/mc_productions/QCD-dijet_pThat15-event-weighted_TuneCP5_5p36TeV_pythia8/OO_MC_DijetEmbedded_pThat-15to1200_TuneCP5_5p36TeV_pythia8/260306_002843/0000/HiForestMiniAOD_116.root
+Time elapsed: 441 seconds
+File Contains: 123000 entries.
+NMiss: 91539 | NFake: 301614 | NMatch: 3378166
+Reached file limit of 20. Stopping.
+
+=== PROCESSING SUMMARY ===
+NMatches: 3378166
+NMisses: 91539
+NFakes: 301614
+Train Counter: 1150033
+Test Counter: 1148765
+=======================
+
+=== TIMING SUMMARY ===
+Total processing time: 0h 7m 42.04s
+Events processed per second: 5532.02 Hz
+Average time per event: 0.180766 ms
+=======================
+
+=== MEMORY SUMMARY ===
+Peak memory usage: 536.234 MB
+Memory cleanup completed.
+=======================
+Cuts applied: L1 MinBias Trigger;Cluster Compatibility Filter;Primary Vertex Filter;HF E_{Max}+ AND HF E_{Max}- > 14;Jet PF CEF < 0.8;Jet PF NEF < 0.8;Jet PF MUF < 0.8;Jet PF CHM > 0;Match iff Reco&Gen pT > 30.0 GeV/c;Jet |eta| < 1.6;
+General info: NEntries: 2.6M;Sample: MC;Tag: MC_10files_FineBin_Debug;EventsBeforeCuts: 2556000;EventsAfterCuts: 2298798;EventCutEfficiency: 89.94%;TotalJetsProcessed: 9797812;TotalProcessingTime: 0h 7m 42.04s;NMiss: 91539;NFake: 301614;NMatch: 3378166;MC: Yes;
+Output written to: /home/xirong/JetStudiesOO/LynnsCode/RootFiles/0414HalfHalfTest/Response_MC_2.6MEvts_MC_10files_FineBin_Debug_20260417.root
