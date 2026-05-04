@@ -67,7 +67,7 @@ vector<string> GetRootFiles(const string& pattern) {
 
     return rootFiles;
 }
-int SaveHistChain() {
+int main() {
 
     string MCpthat15String = "/eos/cms/store/group/phys_heavyions/hbossi/mc_productions/QCD-dijet_pThat15-event-weighted_TuneCP5_5p36TeV_pythia8/OO_MC_DijetEmbedded_pThat-15to1200_TuneCP5_5p36TeV_pythia8/260306_002843/0000/*";
     string MCpthat0String = "/eos/cms/store/group/phys_heavyions/hbossi/mc_productions/MinBias_OO_5p36TeV_hijing/MiniumBiasOO_MC_5p36TeV_HIJING/260316_213344/0000/*";
@@ -80,10 +80,14 @@ int SaveHistChain() {
      *************************************************************************/
     int nevents = 0; // Set to 0 to process all events
     bool MC = true;
-    string outfoldername = "0402OnePDNewest";
-    string ForestFolder = MCpthat15String;
-    string outfiletag = "MC_1PD_xrd_test";
+    string outfoldername = "0430QAPlotDiffptBins";
 
+    float jtptminCut = 300;
+    float jtptmaxCut = 400;
+
+    string outfiletag = Form("1PD_xrd_test_%fto%fGEV", jtptminCut, jtptmaxCut);
+
+    string ForestFolder = MC ? MCpthat15String : DataString;
     bool L1MinBiasBool = true;
     bool HLTMinBiasBool = false;
     bool JetTriggerBool = false;
@@ -98,10 +102,9 @@ int SaveHistChain() {
 
     float jtPfCEFcut = 0.8;
     float jtPfNEFcut = 0.8;
-    float jtPfMUFcut = 0.8;
+    float jtPfMUFcut = 0.9;
     int jtPfCHMcut = 0;
 
-    float jtptCut = 30;
     float etaCut = 1.6;
     float HFEMaxCut = 14;
     /*************************************************************************
@@ -131,7 +134,7 @@ int SaveHistChain() {
         cutString += "Primary Vertex Filter;";
     }
     if (JetPtCutBool == 1){
-        cutString += Form("Jet pT > %.1f GeV/c;", jtptCut);
+        cutString += Form("%.1f > Jet pT > %.1f GeV/c;", jtptminCut, jtptmaxCut);
         cutString += Form("Jet |eta| < %.1f;", etaCut);
     }
     if (HFEFilterBool == 1){
@@ -247,6 +250,11 @@ int SaveHistChain() {
     float hiHFEPlus_pf;
     float ptHat;
 
+    double ptBins[] = {80, 140, 200, 300,400,500};
+    double rgBins[] = {-0.05,0,0.05,0.1,0.2,0.3}; 
+
+    int nrgBins = sizeof(rgBins)/sizeof(double) - 1;
+
     TH1F* hjtpt1 = new TH1F("hjtpt1", "Leading Jet pT Distribution; Leading Jet pT (GeV/c); Number of Jets", 400, 0, 2000);
     TH1F* hjtpt2 = new TH1F("hjtpt2", "Subleading Jet pT Distribution; Subleading Jet pT (GeV/c); Number of Jets", 400, 0, 2000);    
     TH1F* hAj = new TH1F("hAj", "Jet Asymmetry Distribution; A_{J}; Number of Jets", 100, -2, 2);    
@@ -257,7 +265,7 @@ int SaveHistChain() {
     TH1F* hjteta = new TH1F("hjteta", "Jet eta Distribution; Jet eta; Number of Jets", 100, -5, 5);
     TH1F* hjtphi = new TH1F("hjtphi", "Jet phi Distribution; Jet phi; Number of Jets", 100, -TMath::Pi(), TMath::Pi());
     TH1F* hjty= new TH1F("hjty", "Jet Symmetry Distribution; Jet Symmetry; Number of Jets", 100, 0, 2);
-    TH1F* hjtrg = new TH1F("hjtrg", "Jet RG Distribution; Jet RG; Number of Jets", 100, 0, 2);
+    TH1F* hjtrg = new TH1F("hjtrg", "Jet RG Distribution; Jet RG; Number of Jets", nrgBins, rgBins);
     TH1F* hjtzg = new TH1F("hjtzg", "Jet Zg Distribution; Jet Zg; Number of Jets", 100, 0, 2);
     TH1F* hjtkt = new TH1F("hjtkt", "Jet Kt Distribution; Jet Kt (GeV/c); Number of Jets", 100, 0, 5);
     TH1F* hjtangu = new TH1F("hjtangu", "Jet Angularity Distribution; Jet Angularity; Number of Jets", 400, -2, 2);
@@ -270,7 +278,7 @@ int SaveHistChain() {
     TH1F* hrefeta = new TH1F("hrefeta", "Reference Jet eta Distribution; Reference Jet eta; Number of Jets", 100, -5, 5);
     TH1F* hrefphi = new TH1F("hrefphi", "Reference Jet phi Distribution; Reference Jet phi; Number of Jets", 100, -TMath::Pi(), TMath::Pi());
     TH1F* hrefy = new TH1F("hrefy", "Reference Jet y Distribution; Reference Jet y; Number of Jets", 100, -5, 5);
-    TH1F* hrefrg = new TH1F("hrefrg", "Reference Jet RG Distribution; Reference Jet RG; Number of Jets", 200, 0, 2);
+    TH1F* hrefrg = new TH1F("hrefrg", "Reference Jet RG Distribution; Reference Jet RG; Number of Jets", nrgBins, rgBins);
     TH1F* hrefzg = new TH1F("hrefzg", "Reference Jet Zg Distribution; Reference Jet Zg; Number of Jets", 100, 0, 2);
     TH1F* hrefkt = new TH1F("hrefkt", "Reference Jet Kt Distribution; Reference Jet Kt (GeV/c); Number of Jets", 100, 0, 5);
     TH1F* hrefangu = new TH1F("hrefangu", "Reference Jet Angularity Distribution; Reference Jet Angularity; Number of Jets", 400, -2, 2);
@@ -279,7 +287,7 @@ int SaveHistChain() {
     TH1F* hgeneta = new TH1F("hgeneta", "Gen Jet eta Distribution; Gen Jet eta; Number of Jets", 100, -5, 5);
     TH1F* hgenphi = new TH1F("hgenphi", "Gen Jet phi Distribution; Gen Jet phi; Number of Jets", 100, -TMath::Pi(), TMath::Pi());
     TH1F* hgeny = new TH1F("hgeny", "Gen Jet y Distribution; Gen Jet y; Number of Jets", 100, -5, 5);
-    TH1F* hgenrg = new TH1F("hgenrg", "Gen Jet RG Distribution; Gen Jet RG; Number of Jets", 200, 0, 2);
+    TH1F* hgenrg = new TH1F("hgenrg", "Gen Jet RG Distribution; Gen Jet RG; Number of Jets", nrgBins, rgBins);
     TH1F* hgenzg = new TH1F("hgenzg", "Gen Jet Zg Distribution; Gen Jet Zg; Number of Jets", 100, 0, 2);
     TH1F* hgenkt = new TH1F("hgenkt", "Gen Jet Kt Distribution; Gen Jet Kt (GeV/c); Number of Jets", 100, 0, 5);
     TH1F* hgenangu = new TH1F("hgenangu", "Gen Jet Angularity Distribution; Gen Jet Angularity; Number of Jets", 400, -2, 2);
@@ -563,7 +571,8 @@ int SaveHistChain() {
             }
 
             if (JetPtCutBool == 1){
-                if (jtpt[j] < jtptCut) continue;
+                if (jtpt[j] < jtptminCut) continue;
+                if (jtpt[j] > jtptmaxCut) continue;
                 if (TMath::Abs(jteta[j]) > etaCut) continue;
             }
             if (JetSelectionsBool == 1){
@@ -772,7 +781,7 @@ int SaveHistChain() {
     cout << "Cuts applied: " << cutString << endl;
     cout << "General info: " << generalInfoString << endl;
 
-    string outFileName = Form("/home/xirong/JetStudiesOO/022426ScanForest/RootFiles/%s/JetSubHist_%s_%sEvts_%s_%s.root",
+    string outFileName = Form("/home/xirong/JetStudiesOO/LynnsCode/RootFiles/%s/%s_%sEvts_%s_%s.root",
                                 outfoldername.c_str(), sampleType.c_str(), nentriesLabel.c_str(), outfiletag.c_str(), date.c_str());
 
     TFile* outFile = new TFile(outFileName.c_str(), "RECREATE");
