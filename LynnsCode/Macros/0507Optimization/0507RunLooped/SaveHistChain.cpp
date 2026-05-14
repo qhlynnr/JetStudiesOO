@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
     int jtPfCHMcut = 0;
 
     float etaCut = 1.6;
-    float HFEMaxCut = 14;
+    float HFEMaxCut = 13;
     /*************************************************************************
      *                                                                       *
      *                          Code here                                    *
