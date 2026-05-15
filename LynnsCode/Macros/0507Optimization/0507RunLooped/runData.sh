@@ -2,7 +2,7 @@
 
 MC=0
 neventcut=0 # 0 for full
-outfilename="051126NewBinHLT2/"
+outfolder="051126NewBinHLT3/"
 logpath="/home/xirong/JetStudiesOO/LynnsCode/RootFiles/${outfolder}/log/"
 tag2="finebin"
 # pt bins
@@ -13,7 +13,9 @@ ptbins=(
   "300 700"
 )
 
+echo "Outpath $logpath"
 if [ ! -d "$logpath" ]; then
+    echo "Making Log Path"
     mkdir -p "$logpath"
 fi
 
@@ -39,7 +41,7 @@ for tag in "${!inputs[@]}"; do
             $jtptmin \
             $jtptmax \
             $neventcut \
-            $outfilename \
+            $outfolder \
             $infilepath \
             $outfiletag \
             > $logpath/executable_MC${MC}_${tag2}_pt${jtptmin}to${jtptmax}_${tag}.log 2>&1 &

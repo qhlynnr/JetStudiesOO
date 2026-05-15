@@ -327,7 +327,7 @@ int main(int argc, char *argv[]) {
 
     JetAnalyserTree->SetBranchAddress("hltanalysis.L1_MinimumBiasHF1_OR_BptxAND",
                                     &L1_MinimumBiasHF1_OR_BptxAND);
-    JetAnalyserTree->SetBranchAddress("hltanalysis.L1_SingleJet28",&L1_SingleJet28);
+    JetAnalyserTree->SetBranchAddress("hltanalysis.L1_SingleJet28_BptxAND",&L1_SingleJet28);
     JetAnalyserTree->SetBranchAddress("hltanalysis.HLT_MinimumBiasHF_OR_BptxAND_v1",
                                     &HLT_MinimumBiasHF_OR_BptxAND_v1);
 
@@ -417,11 +417,10 @@ int main(int argc, char *argv[]) {
             cout << "Current memory usage: " << current_memory_mb << " MB (+" << memory_increase << " MB from start)" << endl;
             cout << endl;
         }
-
         if (L1MinBiasBool == 1){
             if (HLT_MinimumBiasHF_OR_BptxAND_v1 != 1) continue;
             jetsbeforeTrigger++;
-            if (L1_MinimumBiasHF1_OR_BptxAND != 1 ||   L1_SingleJet28 != 1) continue;
+            if (L1_MinimumBiasHF1_OR_BptxAND != 1 && L1_SingleJet28 != 1) continue;
             jetsafterTrigger++;
         }
         if (PVFilterBool == 1){
