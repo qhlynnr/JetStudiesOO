@@ -7,9 +7,9 @@ void drawJetPerf(){
     gStyle->SetOptStat(0);
     gStyle->SetOptTitle(0);
 
-    std::string tag = "OO_March18th_NoEmbedded"; 
+    string tag = "OO_CSFix_CS4_WithVetoMap"; 
 
-    TLatex* cms = new TLatex(0.10,0.92, "#bf{PYTHIA8 OO} (5.36 TeV) ");
+    TLatex* cms = new TLatex(0.10,0.92, "#bf{PYTHIA8 + HIJING OO} (5.36 TeV) ");
     cms->SetNDC();
     cms->SetTextSize(0.05);
     cms->SetTextFont(42);
@@ -21,7 +21,7 @@ void drawJetPerf(){
     zcut->SetTextFont(42);
 
    // List your ROOT files here
-    std::vector<std::string> files = { "JetPerf_OOPYTHIA_NoEmbedded_March18th.root"};
+    std::vector<std::string> files = { "JetPerf_OOPYTHIAEmbedded_CSFix_akCs4PF_June25th.root"};
     std::vector<std::string> Labels = { "#it{p}^{gen}_{T, jet} > 50 GeV"};
 
     std::vector<int> colors = {kViolet-2, kAzure-2, kSpring+2 };
@@ -56,7 +56,7 @@ void drawJetPerf(){
     // Plot #1: 2D plot of the pTjet/pTRef vs. pT ref
     TH2* hClone = (TH2*)h->Clone(Form("hClone_%d", 0));
     hClone->SetDirectory(0);
-    //hClone->GetYaxis()->SetRangeUser(0.5, 1.5); 
+    //hClone->GetYaxis()->SetRangeUser(0.8, 1.2); 
     hClone->GetXaxis()->SetTitle("#it{p}^{ref}_{T} (GeV/#it{c})");
     hClone->GetXaxis()->SetTitleOffset(1.2);
     hClone->GetYaxis()->SetTitle("#it{p}^{jet}_{T}/#it{p}^{ref}_{T}");
@@ -105,20 +105,23 @@ void drawJetPerf(){
     for(Int_t i=1; i <= nBins ; i++){
       TString proj = Form("px_%d", i);
       TH1D* px = hClone->ProjectionY(proj, i, i); 
-      TF1 *f1 = new TF1("f1", "gaus", 0.5, 1.2);
-      px->Fit(f1,"","",0.5, 1.5);
+      TF1 *f1 = new TF1("f1", "gaus", 0.9, 1.1);
+      px->Fit(f1,"","",0.9, 1.1);
       TCanvas* cTemp = new TCanvas( Form("canvas_%d", i), "", 600, 600);
       cTemp->SetTickx(); 
       cTemp->SetTicky(); 
       cTemp->SetRightMargin(0.15); 
       cTemp->SetLeftMargin(0.12);
-      TLatex* pt = new TLatex(0.3,0.815, Form("%0.2f < pT < %0.2f GeV",hClone->GetXaxis()->GetBinLowEdge(i), hClone->GetXaxis()->GetBinLowEdge(i) + hClone->GetXaxis()->GetBinWidth(i)));
+      TLatex* pt = new TLatex(0.3,0.15, Form("%0.2f < pT < %0.2f GeV : #mu = %0.4f",hClone->GetXaxis()->GetBinLowEdge(i), hClone->GetXaxis()->GetBinLowEdge(i) + hClone->GetXaxis()->GetBinWidth(i), f1->GetParameter(1)));
       pt->SetNDC();
       pt->SetTextSize(0.02);
       pt->SetTextFont(42);
-      px->Draw(); 
+      std::cout << "bins " << px->GetNbinsX() << std::endl;
+      px->GetXaxis()->SetRangeUser(0.8, 1.2);
+      px->Draw();
+      cms->Draw();  
       pt->Draw(); 
-      //cTemp->SaveAs(Form("projBinNumber_%d.pdf", i));  
+      cTemp->SaveAs(Form("projBinNumber_%d.pdf", i));  
       if(hClone->GetXaxis()->GetBinLowEdge(i) > 30){
         hJER->SetBinContent(i,  f1->GetParameter(2)/f1->GetParameter(1));
         hJER->SetBinError(i,  f1->GetParError(2));
@@ -158,7 +161,7 @@ void drawJetPerf(){
       TH1D* px = h10_30->ProjectionY(proj, i, i); 
       TF1 *f1 = new TF1("f1", "gaus", 0.5, 1.2);
       px->Fit(f1,"","",0.5, 1.5);
-      if(h10_30->GetXaxis()->GetBinLowEdge(i) > 30){
+      if(h0_10->GetXaxis()->GetBinLowEdge(i) > 30){
         hJER_10_30->SetBinContent(i,  f1->GetParameter(2)/f1->GetParameter(1));
         hJER_10_30->SetBinError(i,  f1->GetParError(2));
         hJES_10_30->SetBinContent(i, f1->GetParameter(1)); 
@@ -167,8 +170,8 @@ void drawJetPerf(){
     }
 
 
-    TH1D* hJES_30_50 = (TH1D*)h30_50->ProjectionX("JES_30_50"); 
-    TH1D* hJER_30_50 = (TH1D*)h30_50->ProjectionX("JER_30_50");
+    TH1D* hJES_30_50 = (TH1D*)h10_30->ProjectionX("JES_30_50"); 
+    TH1D* hJER_30_50 = (TH1D*)h10_30->ProjectionX("JER_30_50");
     hJES_30_50->Reset();
     hJER_30_50->Reset(); 
 
@@ -176,9 +179,9 @@ void drawJetPerf(){
     for(Int_t i=1; i <= nBins ; i++){
       TString proj = Form("px_%d", i);
       TH1D* px = h30_50->ProjectionY(proj, i, i); 
-      TF1 *f1 = new TF1(Form("f1_%d", i), "gaus", 0.5, 1.2);
+      TF1 *f1 = new TF1("f1", "gaus", 0.5, 1.2);
       px->Fit(f1,"","",0.5, 1.5);
-      if(h30_50->GetXaxis()->GetBinLowEdge(i) > 30){
+      if(h0_10->GetXaxis()->GetBinLowEdge(i) > 30){
         hJER_30_50->SetBinContent(i,  f1->GetParameter(2)/f1->GetParameter(1));
         hJER_30_50->SetBinError(i,  f1->GetParError(2));
         hJES_30_50->SetBinContent(i, f1->GetParameter(1)); 
@@ -188,7 +191,7 @@ void drawJetPerf(){
 
     TH1D* hJES_Raw = (TH1D*)hRaw->ProjectionX("JES_Raw"); 
     TH1D* hJER_Raw = (TH1D*)hRaw->ProjectionX("JER_Raw");
-    hJES_Raw->Reset();
+    hJER_Raw->Reset();
     hJER_Raw->Reset(); 
 
     // 30-50 
@@ -197,7 +200,7 @@ void drawJetPerf(){
       TH1D* px = hRaw->ProjectionY(proj, i, i); 
       TF1 *f1 = new TF1("f1", "gaus", 0.5, 1.2);
       px->Fit(f1,"","",0.5, 1.5);
-      if(h0_10->GetXaxis()->GetBinLowEdge(i) > 30){
+      if(hRaw->GetXaxis()->GetBinLowEdge(i) > 30){
         hJER_Raw->SetBinContent(i,  f1->GetParameter(2)/f1->GetParameter(1));
         hJER_Raw->SetBinError(i,  f1->GetParError(2));
         hJES_Raw->SetBinContent(i, f1->GetParameter(1)); 
@@ -209,7 +212,7 @@ void drawJetPerf(){
     TCanvas* cJES = new TCanvas("cJES", "", 600, 600);
     cJES->SetTickx(); 
     cJES->SetTicky(); 
-    cJES->SetRightMargin(0.15); 
+    cJES->SetRightMargin(0.05); 
     cJES->SetLeftMargin(0.12); 
 
     hJES->GetYaxis()->SetTitle("#mu");    
@@ -232,18 +235,18 @@ void drawJetPerf(){
     hJES_30_50->SetLineColor(kGreen+3);
     hJES->Draw(); 
     hJES_Raw->Draw("same"); 
-    // hJES_0_10->Draw("same"); 
-    // hJES_10_30->Draw("same"); 
-    // hJES_30_50->Draw("same"); 
-    TLegend* leg2 = new TLegend( 0.4, 0.75, 0.8, 0.9); 
+    hJES_0_10->Draw("same"); 
+    hJES_10_30->Draw("same"); 
+    hJES_30_50->Draw("same"); 
+    TLegend* leg2 = new TLegend( 0.3, 0.65, 0.8, 0.85); 
     leg2->SetBorderSize(0); 
     leg2->SetFillStyle(0);
     leg2->AddEntry(hJES, "Inclusive (0-100) - Corrected PT"); 
     leg2->AddEntry(hJES_Raw, "Inclusive (0-100) - Raw PT"); 
-
-    // leg2->AddEntry(hJES_0_10, "(0-10)"); 
-    // leg2->AddEntry(hJES_10_30, "(10-30)"); 
-    // leg2->AddEntry(hJES_30_50, "(30-50)"); 
+    leg2->AddEntry(hJES_0_10, "(0-10)"); 
+    leg2->AddEntry(hJES_10_30, "(10-30)"); 
+    leg2->AddEntry(hJES_30_50, "(30-50)"); 
+    leg2->SetTextSize(0.035);
     leg2->Draw(); 
     line->Draw(); 
     cms->Draw(); 
