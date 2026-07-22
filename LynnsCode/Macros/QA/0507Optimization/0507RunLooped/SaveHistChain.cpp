@@ -101,14 +101,16 @@ void SaveHistChain(bool MC = false,
                    const string& outfiletag2 = "1000evt",
                    const string& jetTreeName = "ak4PFJetAnalyzer/t",
                    const string& JetVetoMap = "/home/xirong/JetStudiesOO/Include/Winter24Prompt24_2024BCDEFGHI.root",
-                   const string& CorrectionFile = "/home/xirong/JetStudiesOO/Include/Prompt24HIpp_V1_DATA_L2Residual_AK4PF.txt");
+                   vector<string> JECtxtvector= {"/home/xirong/JetStudiesOO/Include/Prompt24HIpp_V1_DATA_L2Residual_AK4PF.txt",
+                                            "/home/xirong/JetStudiesOO/Include/Prompt24HIpp_V1_DATA_L2L3Residual_AK4PF.txt"});
 
 int main(int argc, char *argv[]) {
-    if (argc < 8) {
+    if (argc < 11) {
     std::cerr << "Usage: " << argv[0]
               << " MC jtptmin jtptmax neventcut outfolder infilepath outfiletag jettreename\n";
     return 1;
     }
+
     std::cout << "Have " << argc << " arguments:\n";
     bool MC = atoi(argv[1]);
     float jtptminCut = atof(argv[2]);
@@ -119,7 +121,13 @@ int main(int argc, char *argv[]) {
     string outfiletag2 = argv[7];
     string jetTreeName = argv[8];
     string JetVetoMap = Form("/home/xirong/JetStudiesOO/Include/%s",argv[9]);
-    string CorrectionFile = Form("/home/xirong/JetStudiesOO/Include/%s",argv[10]);
+    std::vector<std::string> correctionFiles;
+    for (int i = 10; i < argc; ++i) {
+        cout << "Added file: " << argv[i] << endl;
+        correctionFiles.push_back(
+            Form("/home/xirong/JetStudiesOO/Include/%s", argv[i])
+        );
+    }
     cout << "MC: " << MC << endl;
     cout << "Jet pT min cut: " << jtptminCut << " GeV/c" << endl;
     cout << "Jet pT max cut: " << jtptmaxCut << " GeV/c" << endl;
@@ -139,7 +147,8 @@ int main(int argc, char *argv[]) {
     }
 
     cout << "Starting SaveHistChain (main):" << endl;
-    SaveHistChain(MC, jtptminCut, jtptmaxCut, nevents, outfoldername, rootFiles, outfiletag2, jetTreeName, JetVetoMap, CorrectionFile);
+    SaveHistChain(MC, jtptminCut, jtptmaxCut, nevents, outfoldername, rootFiles, outfiletag2, jetTreeName, JetVetoMap,
+                  correctionFiles);
 
     return 0;
 }
@@ -153,14 +162,16 @@ void SaveHistChain(bool MC,
                    const string& outfiletag2,
                    const string& jetTreeName,
                    const string& JetVetoMap,
-                   const string& CorrectionFile) {
+                    vector<string> JECtxtvector)
+                                        
+{
     /*************************************************************************
      *                                                                       *
      *                      TUNABLE PARAMETERS SECTION                       *
      *                                                                       *
      *                                                                       *
      *************************************************************************/
-    string outfiletag = Form("%s_%ito%iGEV", outfiletag2.c_str(), (int)jtptminCut, (int)jtptmaxCut);
+    string outfiletag = Form("%s", outfiletag2.c_str());
 
     cout << ">>Starting SaveHistChain<<" << endl;
     bool L1MinBiasBool = false;
@@ -169,7 +180,6 @@ void SaveHistChain(bool MC,
     bool PVFilterBool = true;
     bool zvtxCutBool = true;
     bool JetPtCutBool = true;
-    bool JetSelectionsBool = true;
     bool HFEFilterBool = true;
     float zvtxCutValue = 15.0;
     float etaCut = 1.6;
@@ -243,7 +253,6 @@ void SaveHistChain(bool MC,
     Float_t refrg[N_MAXJETS],  refzg[N_MAXJETS], refkt[N_MAXJETS];
     Float_t genpt[N_MAXJETS],  geneta[N_MAXJETS], genphi[N_MAXJETS];
     Float_t genrg[N_MAXJETS],  genzg[N_MAXJETS], genkt[N_MAXJETS];
-    int genmatchindex[N_MAXJETS];
 
     //Trigger variables
     int Trigger;
@@ -464,10 +473,13 @@ void SaveHistChain(bool MC,
     auto start_time = std::chrono::high_resolution_clock::now();
     cout << "Starting processing..." << endl;
     vector<string> Files;
-    Files.push_back(CorrectionFile);
+    for (string file : JECtxtvector){
+        Files.push_back(file);
+    }
     
     JetCorrector JEC(Files);
     JetSelect js(JetVetoMap);
+    
     int nEntries = JetAnalyserTree->GetEntries();
     for (Long64_t entrynum = 0; entrynum < nEntries; entrynum++){
         JetAnalyserTree->GetEntry(entrynum);
@@ -517,7 +529,8 @@ void SaveHistChain(bool MC,
 
         for (int j = 0; j < nref; j++){
             jetsBeforeSelection++;
-            if(!js.JetSelection(jteta[j], jtphi[j], jtPfCEF[j], jtPfNEF[j],jtPfMUF[j])){continue;}
+            if(!js.JetSelection_pp(jteta[j], jtphi[j], jtPfCEF[j], jtPfNEF[j],jtPfMUF[j],
+                        jtPfNHF[j], jtPfCHF[j], jtPfCHM[j])){continue;}
             
             jetsAfterSelection++;
 
@@ -552,6 +565,21 @@ void SaveHistChain(bool MC,
             hjtzg->Fill(jtzg[j], totalWeight);
             hjtkt->Fill(jtkt[j], totalWeight);
 
+            if(MC){
+                hrefpt->Fill(refpt[j], totalWeight);
+                hrefeta->Fill(refeta[j], totalWeight);
+                hrefphi->Fill(refphi[j], totalWeight);
+                hrefrg->Fill(refrg[j], totalWeight);
+                hrefzg->Fill(refzg[j], totalWeight);
+                hrefkt->Fill(refkt[j], totalWeight);
+
+                hgenpt->Fill(genpt[j], totalWeight);
+                hgeneta->Fill(geneta[j], totalWeight);
+                hgenphi->Fill(genphi[j], totalWeight);
+                hgenrg->Fill(genrg[j], totalWeight);
+                hgenzg->Fill(genzg[j], totalWeight);
+                hgenkt->Fill(genkt[j], totalWeight);
+            }
             hperformance->Fill(genjetpt, response, totalWeight);
         }
         

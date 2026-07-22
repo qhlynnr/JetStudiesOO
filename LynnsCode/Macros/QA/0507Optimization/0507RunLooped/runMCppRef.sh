@@ -1,8 +1,8 @@
 #!/bin/bash
 
 MC=1
-neventcut=100000 # 0 for full
-outfolder="PPRef/070926PPRefMCData/Test/"
+neventcut=0 # 0 for full
+outfolder="PPRef/0722_CorrectJetID_Summer24Prompt24Corrections/MC/"
 logpath="/home/xirong/JetStudiesOO/LynnsCode/RootFiles/${outfolder}/log/"
 tagMC2="test"
 # pt bins
@@ -14,7 +14,11 @@ ptbins=(
 )
 jetTreeName="ak4PFJetAnalyzer/t"
 jetVetoMap="Winter24Prompt24_2024BCDEFGHI.root"
-CorrectionFile="Prompt24HIpp_V1_MC_L2Relative_AK4ChsPF.txt"
+CorrectionFileL2Relative="Prompt24HIpp_V1_MC_L2Relative_AK4PF.txt"
+CorrectionFileNewL1FastJet="Summer24Prompt24/Summer23BPixPrompt23_V1_MC_L1FastJet_AK4PFPuppi.txt"
+CorrectionFileNewL2Relative="Summer24Prompt24/Summer24Prompt24_V1_MC_L2Relative_AK4PFPuppi.txt"
+CorrectionFileNewL3Absolute="Summer24Prompt24/Summer23BPixPrompt23_V1_MC_L3Absolute_AK4PFPuppi.txt"
+
 if [ ! -d "$logpath" ]; then
     mkdir -p "$logpath"
 fi
@@ -30,7 +34,7 @@ for tagMC in "${!inputsMC[@]}"; do
     for ptbin in "${ptbins[@]}"; do
         read jtptmin jtptmax <<< "$ptbin"
 
-        outfiletag="${tagMC}_${tagMC2}_Pt${jtptmin}to${jtptmax}"
+        outfiletag="${tagMC}_${tagMC2}pt${jtptmin}to${jtptmax}"
 
         echo "Running $outfiletag"
 
@@ -44,7 +48,9 @@ for tagMC in "${!inputsMC[@]}"; do
             $outfiletag \
             $jetTreeName \
             $jetVetoMap \
-            $CorrectionFile \
-            > $logpath/executable_MC${MC}_${tagMC2}_pt${jtptmin}to${jtptmax}_${tagMC}.log 2>&1 &
+            $CorrectionFileNewL1FastJet\
+            $CorrectionFileNewL2Relative \
+            $CorrectionFileNewL3Absolute \
+            > $logpath/executable_MC${MC}_${tagMC2}_${tagMC}.log 2>&1 &
     done
 done
