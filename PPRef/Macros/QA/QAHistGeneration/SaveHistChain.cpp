@@ -120,12 +120,12 @@ int main(int argc, char *argv[]) {
     string ForestFolder = Form("%s*",argv[6]);
     string outfiletag2 = argv[7];
     string jetTreeName = argv[8];
-    string JetVetoMap = Form("../../Include/%s",argv[9]);
+    string JetVetoMap = Form("../../../Include/%s",argv[9]);
     std::vector<std::string> correctionFiles;
     for (int i = 10; i < argc; ++i) {
         cout << "Added file: " << argv[i] << endl;
         correctionFiles.push_back(
-            Form("../../Include/%s", argv[i])
+            Form("../../../Include/%s", argv[i])
         );
     }
     cout << "MC: " << MC << endl;
