@@ -67,16 +67,26 @@ static void DrawAndSaveWithRatio(const std::vector<TH1*>& hs,
                         BlockCaptionInfo captionInfo = {},
                         bool normalize = false) {
   if (hs.empty()) return;
+  std::vector<TH1*> hdraw;
 
-  if (normalize){
-      for (auto h : hs) {
-        if (h) h->Scale(1.0 / h->GetSumOfWeights(), "width");
+  for (auto h : hs) {
+      if (!h) {
+          hdraw.push_back(nullptr);
+          continue;
       }
-  }
 
+      TH1* hclone = (TH1*)h->Clone(Form("%s_clone", h->GetName()));
+      hclone->SetDirectory(0);
+
+      if (normalize && hclone->GetSumOfWeights() != 0) {
+          hclone->Scale(1.0 / hclone->GetSumOfWeights(), "width");
+      }
+
+      hdraw.push_back(hclone);
+  }
   std::vector<std::string> lab = labels;
   if (lab.size() != hs.size()) {
-    lab.resize(hs.size());
+    lab.resize(hdraw.size());
     for (size_t i = 0; i < hs.size(); ++i) {
       if (i < labels.size()) lab[i] = labels[i];
       else lab[i] = std::string("hist") + std::to_string(i+1);
@@ -99,14 +109,18 @@ static void DrawAndSaveWithRatio(const std::vector<TH1*>& hs,
   if (logx) pad1->SetLogx();
   if (logy) pad1->SetLogy();
 
-  TH1* h0 = hs[0];
+  TH1* h0 = hdraw[0];
+  if (hdraw.empty() || !hdraw[0]) {
+      for (auto h : hdraw) delete h;
+      return;
+  }
   if (!title.empty()) h0->SetTitle(title.c_str());
   h0->GetXaxis()->SetTitle(xTitle.c_str());
   h0->GetYaxis()->SetTitle(yTitle.c_str());
 
   if (yMax == -999) {
     double maxy = 0;
-    for (auto h : hs) if (h) maxy = std::max(maxy, h->GetMaximum());
+    for (auto h : hdraw) if (h) maxy = std::max(maxy, h->GetMaximum());
     if (maxy > 0) h0->SetMaximum(1.25 * maxy);
   }
 
@@ -121,15 +135,19 @@ static void DrawAndSaveWithRatio(const std::vector<TH1*>& hs,
   h0->GetYaxis()->SetRangeUser(newYmin, newYmax);
 
   bool first = true;
-  for (auto h : hs) {
+  for (auto h : hdraw) {
     if (!h) continue;
+    cout << h->GetName()
+      << " integral = "
+      << h->Integral("width")
+      << endl;
     if (first) { h->Draw("E1 HIST"); first = false; }
     else       { h->Draw("E1 HIST SAME"); }
   }
 
   DrawTLatexLines(captionInfo);
 
-  const size_t n = hs.size();
+  const size_t n = hdraw.size();
   double ly2 = 0.9;
   double ly1 = ly2 - 0.05 * std::max<size_t>(n, 1);
   if (ly1 < 0.1) ly1 = 0.1;
@@ -140,7 +158,7 @@ static void DrawAndSaveWithRatio(const std::vector<TH1*>& hs,
   leg->SetTextSize(0.030);
   for (size_t i = 0; i < hs.size(); ++i) {
     if (!hs[i]) continue;
-    leg->AddEntry(hs[i], lab[i].c_str(), "l");
+    leg->AddEntry(hdraw[i], lab[i].c_str(), "l");
   }
   leg->Draw();
 
@@ -148,12 +166,12 @@ static void DrawAndSaveWithRatio(const std::vector<TH1*>& hs,
   if (logx) pad2->SetLogx();
 
   std::vector<TH1*> ratios;
-  for (size_t i = 1; i < hs.size(); ++i) {
-    if (!hs[i]) { ratios.push_back(nullptr); continue; }
-    TH1* ratio = (TH1*)hs[i]->Clone(Form("%s_ratio", hs[i]->GetName()));
+  for (size_t i = 1; i < hdraw.size(); ++i) {
+    if (!hdraw[i]) { ratios.push_back(nullptr); continue; }
+    TH1* ratio = (TH1*)hdraw[i]->Clone(Form("%s_ratio", hdraw[i]->GetName()));
     ratio->GetXaxis()->SetRangeUser(newXmin, newXmax);
     ratio->SetDirectory(0);
-    ratio->Divide(hs[0]);
+    ratio->Divide(hdraw[0]);
     std::string ratioLabel = lab[i] + " / " + lab[0];
     ratio->GetYaxis()->SetTitle(ratioLabel.c_str());
     ratio->GetXaxis()->SetTitle(xTitle.c_str());
@@ -185,6 +203,7 @@ static void DrawAndSaveWithRatio(const std::vector<TH1*>& hs,
   c->SaveAs(outPng.c_str());
 
   for (auto r : ratios) delete r;
+  for (auto h : hdraw) delete h;
   delete line;
   delete leg;
   delete pad1;

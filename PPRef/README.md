@@ -21,17 +21,21 @@
    source runData.sh
    ```
 
-3. To run on **MC**, check the settings in `runMC.sh`, then execute:
+3. To run on **MC**, check the settings in `runMCppRef.sh`, then execute:
 
    ```bash
-   source runMC.sh
+   source runMCppRef.sh
    ```
 
 4.  Once thats done, a .root file would appear in the directory of your choice containing the histograms. 
 
 ## Drawing JER and JES
 
+<<<<<<< HEAD
 Open `Macros/QAPlotting/drawJERJES.C`.
+=======
+Open `Macros/QA/QAPlotting/drawJERJES.C`.
+>>>>>>> 0723PRBranch
 
 Edit the arguments to `drawJERJES()` by setting:
 
@@ -54,7 +58,11 @@ plots will be automatically generated.
 
 ## Drawing MC and Data comparison or MC Reco Gen Comparison
 
+<<<<<<< HEAD
 Open 'Macros/QAPlotting/drawComparisons.C'
+=======
+Open `Macros/QA/QAPlotting/drawComparison.C`
+>>>>>>> 0723PRBranch
 
 - Edit Inside the function
 - `dataFolder` to the path of the ROOT file containing the histograms.

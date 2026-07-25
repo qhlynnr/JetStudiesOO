@@ -47,7 +47,7 @@ void FillChain(TChain &chain, vector<string> &files) {
 
 
 // main function
-void fill2025jets(){
+void fillReweightingHists(){
 
     //char const *input = "/eos/cms/store/group/phys_heavyions/hbossi/mc_productions/QCD-dijet_pThat15-event-weighted_TuneCP5_5p36TeV_pythia8/OO_MC_DijetEmbedded_pThat-15to1200_TuneCP5_5p36TeV_pythia8/260306_002843/0000/";
     //char const *input = "/eos/cms/store/group/phys_heavyions/hbossi/mc_productions/Dijet_pThat-15to1200_TuneCP5_5p36TeV_pythia8/OO_MC_DijetNoEmbedding_pThat-15to1200_TuneCP5_5p36TeV_pythia8/260318_152047/0000/";
@@ -71,8 +71,6 @@ void fill2025jets(){
     TTreeReaderValue<float>   zVertex(hiEventReader, "vz");
     TTreeReaderValue<int>   nTrk(hiEventReader, "hiNtracks");  
 
-        std::cout << "Done with hiEvtAnalyzer" << std::endl; 
-
     /* read in filter information */
     TChain eventChain("skimanalysis/HltTree"); 
     FillChain(eventChain, files);
@@ -80,28 +78,14 @@ void fill2025jets(){
     TTreeReaderValue<int>   vertexFilter(eventReader, "pprimaryVertexFilter");
     TTreeReaderValue<int>   clusterFilter(eventReader, "pclusterCompatibilityFilter"); 
 
+    /* read in rho information */
+    TChain rhoChain("hiFJRhoAnalyzerFinerBins/t");
+    FillChain(rhoChain, files);
+    TTreeReader rhoReader(&rhoChain);
+    TTreeReaderValue<std::vector<double>> etaMin(rhoReader, "etaMin");
+    TTreeReaderValue<std::vector<double>> etaMax(rhoReader, "etaMax");
+    TTreeReaderValue<std::vector<double>> rho(rhoReader, "rho");
 
-    std::cout << "Done with skimanalysis" << std::endl; 
-
-
-    /* read in jet information */
-    TChain jetChain("akCs4PFJetAnalyzer/t");
-    FillChain(jetChain, files);
-    TTreeReader jetReader(&jetChain);
-    TTreeReaderValue<int>   jetN(jetReader, "nref");
-    TTreeReaderArray<float> jetEta(jetReader, "jteta");
-    TTreeReaderArray<float> jetPhi(jetReader, "jtphi");
-    TTreeReaderArray<float> jetPt(jetReader, "jtpt");
-    TTreeReaderArray<float> rawPt(jetReader, "rawpt");
-    TTreeReaderArray<float> genJetPt(jetReader, "refpt"); 
-    TTreeReaderArray<float> jetRg(jetReader, "jtrg");
-    TTreeReaderArray<float> genJetRg(jetReader, "refrg");
-    TTreeReaderArray<float> jtPfCEF(jetReader, "jtPfCEF"); 
-    TTreeReaderArray<float> jtPfMUF(jetReader, "jtPfMUF"); 
-    TTreeReaderArray<float> jtPfNEF(jetReader, "jtPfNEF"); 
-    TTreeReaderArray<int> jtPfCHM(jetReader, "jtPfCHM"); 
-
-    std::cout << "Done with akCs4PFJetAnalyzer" << std::endl; 
 
     /* read in trigger information */
     TChain trigChain("hltanalysis/HltTree");
@@ -109,36 +93,22 @@ void fill2025jets(){
     TTreeReader trigReader(&trigChain);
     TTreeReaderValue<int> mb(trigReader, "HLT_MinimumBiasHF_OR_BptxAND_v1");
 
-    std::cout << "Done with hltanalysis" << std::endl; 
 
 
     /* declare the histograms */
-    TH1D* hJetPt      = new TH1D("hJetPt", "", 250, 0, 500); 
-    TH1D* hRefJetPt   = new TH1D("hRefJetPt", "", 250, 0, 500); 
-    TH1D* hJetRg      = new TH1D("hJetRg", "", 100, 0, 1.0); 
-    TH1D* hRefJetRg   = new TH1D("hRefJetRg", "", 100, 0, 1.0); 
-    TH2D* hJetPerf    = new TH2D("hJetPerf", "", 50, 0, 500, 210, -0.045, 2.055); 
-    TH1D* hHiHF       = new TH1D("hHiHF_1D", "", 200, 0, 600); 
-    TH2D* hHiHFvsnTrk = new TH2D("hHiHFvsnTrk", "", 200, 0, 600, 100, 0, 100); 
+    TH1D* hMeanRho = new TH1D("hRho", "", 50, 0, 50);
+    TH1D* hZvertex = new TH1D("hZVertex", "", 50, -25, 25); 
     TH1D* hCent       = new TH1D("hCent", "", 100, 0, 100); 
-    TH2D* hJetPerfRaw    = new TH2D("hJetPerfRaw", "", 50, 0, 500, 210, -0.045, 2.055); 
+    TH2D* h2RhoCent = new TH2D("h2RhoCent", "",  100, 0, 100, 50, 0, 50); 
+    TH2D* h2VzRho  = new TH2D("h2VzRho", "",  50, -25, 25, 50, 0, 50); 
 
-    std::vector<int> centBins = {0, 10, 30, 50, 100}; 
-    std::vector<TH2D*> hJetPerfHists; 
-    for(int c = 0; c < centBins.size()-1; c++){
-      TH2D* hJetPerfCent = new TH2D(Form("hJetPerf_cent_%d_%d", centBins.at(c), centBins.at(c+1)), "", 50, 0, 210, -0.045, 2.055); 
-      hJetPerfHists.push_back(hJetPerfCent);
-    }
-    Long64_t totalEvents = jetReader.GetEntries(true);
+    Long64_t totalEvents = rhoReader.GetEntries(true);
 
     std::cout << " ---> Total number of events to process is " << totalEvents << std::endl;
 
-    // initialize the jet selector 
-    JetSelect js("./Winter25Prompt25_RunCDEFG.root");
-
     /* read in information from TTrees */
     for (Long64_t i = 0; i < totalEvents; i++) {
-        jetReader.Next(); eventReader.Next(); trigReader.Next(); hiEventReader.Next(); 
+        rhoReader.Next(); eventReader.Next(); trigReader.Next(); hiEventReader.Next(); 
 
         if (i % 20000 == 0) { 
             cout << "Entry: " << i << " / " <<  totalEvents << endl; 
@@ -147,8 +117,8 @@ void fill2025jets(){
         // trigger selection
         if(*mb != 1) continue; 
 
-        // z vertex filter
-        if(*zVertex < -15.0 || *zVertex > 15.0) continue; 
+        // z vertex filter - have a wider cut here because we will use this to reweight
+        if(*zVertex < -25 || *zVertex > 25.0) continue; 
 
         // event filters
         if(*vertexFilter == 0 || *clusterFilter == 0) continue; 
@@ -162,68 +132,33 @@ void fill2025jets(){
 
         // now fill the centrality and/or event histograms 
         hCent->Fill(cent,w); 
-        hHiHF->Fill(*HFpf, w); 
-        hHiHFvsnTrk->Fill(*HFpf, *nTrk, w); 
-
-        //find the cent bin
-        int centBinIndex = -999; 
-        for(int c = 0; c < centBins.size()-1; c++){
-          if(cent >= centBins.at(c) && cent <= centBins.at(c+1)){
-            centBinIndex = c; 
-            break; 
-          }
-       }
-
-       if(centBinIndex < 0) std::cout << "Something went wrong: " << cent << std::endl;
-
-        float maxJetPt = -999;
-        float maxJetPhi = -999;
-        float maxJetEta = -999;
-
-        int size = genJetRg.GetSize();
-        if(size != *jetN)std::cout << "size of Rg: " << size << " size of nRef " << *jetN << std::endl;
-
-        /* iterate through jets and find the jet with max pT */
-        for (int j = 0; j < *jetN; ++ j) {
-          // jet kinematic and quality selections 
-          if (TMath::Abs(jetEta[j]) > 1.6) { continue; }
-          if(jetRg[j] < 1e-5 ||  genJetRg[j] < 1e-5) continue;  
-          // perform the jet quality selections
-          if(!js.JetSelection(jetEta[j], jetPhi[j], jtPfCEF[j], jtPfNEF[j],jtPfMUF[j])){continue;}
-
-          // now fill the histograms
-          hJetPt->Fill(jetPt[j], w); 
-          hRefJetPt->Fill(genJetPt[j], w);
+        hZvertex->Fill(*zVertex, w); 
       
-          hJetRg->Fill(jetRg[j]/Rjet, w);
-          hRefJetRg->Fill(genJetRg[j]/Rjet, w);
-          hJetPerf->Fill(genJetPt[j],jetPt[j]/ genJetPt[j], w); 
-          hJetPerfRaw->Fill(genJetPt[j],rawPt[j]/ genJetPt[j], w); 
-          hJetPerfHists.at(centBinIndex)->Fill(genJetPt[j],jetPt[j]/ genJetPt[j], w);
-        
-        
-        }
-        if (i % 20000 == 0) { 
-            cout << "Here after loop for event: " << i << " / " <<  totalEvents << endl; 
-        }
-
+        /* iterate through rho and calculate the mean rho per event */
+        size_t nEtaBins = etaMin->size();
+        double rhoSumPerEvent = 0.0; 
+        for (size_t j = 0; j < nEtaBins; j++) {
+            double r    = rho->at(j);
+            rhoSumPerEvent += r; 
+        }  
+        // NOTE: Might need to only include non-zero bins
+        double meanRho = double(rhoSumPerEvent)/double(nEtaBins); 
+        hMeanRho->Fill(meanRho, w); 
+        h2RhoCent->Fill(cent,meanRho, w);
+        h2VzRho->Fill(*zVertex, meanRho, w); 
       
     } // end loop over the number of events
 
-    TFile* outFile = new TFile("JetPerf_OOPYTHIAEmbedded_CSFix_akCs4PF_June25th.root", "RECREATE"); 
+    // now take the rhoCent and calculate the rho per cent bin
+
+
+    TFile* outFile = new TFile("ReweightingHistsMC_OOEmbedded_June26th.root", "RECREATE"); 
     outFile->cd(); 
-    hJetPt->Write(); 
-    hRefJetPt->Write();
-    hJetRg->Write();
-    hRefJetRg->Write();
-    hJetPerf->Write(); 
+    hMeanRho->Write(); 
+    h2RhoCent->Write(); 
+    hZvertex->Write(); 
     hCent->Write(); 
-    hHiHF->Write(); 
-    hJetPerfRaw->Write(); 
-    hHiHFvsnTrk->Write(); 
-    for(int c = 0; c < centBins.size()-1; c++){
-      hJetPerfHists.at(c)->Write(); 
-    }
+    h2VzRho->Write(); 
 
 
 }

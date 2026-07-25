@@ -48,9 +48,7 @@ for tagMC in "${!inputsMC[@]}"; do
             $outfiletag \
             $jetTreeName \
             $jetVetoMap \
-            $CorrectionFileNewL1FastJet \
-            $CorrectionFileNewL2Relative \
-            $CorrectionFileNewL3Absolute \
+            $CorrectionFileL2Relative \
             > $logpath/executable_MC${MC}_${tagMC2}_${tagMC}.log 2>&1 &
     done
 done

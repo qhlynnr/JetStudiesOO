@@ -10,13 +10,13 @@
 //==============================================================================
 
 /*
-  RooSimplepTPbPb_split.cxx : Script to perform the split MC test.
+  RooSimplepTPbPb_trivial.cxx : Script to perform the trivial test.
   Hannah Bossi <hannah.bossi@cern.ch>
   4/16/2026, adapted from Yale code. 
   
-  To compile run: make Execute. 
+  To compile run: make ExecuteTrivial. 
   export LD_LIBRARY_PATH=/afs/cern.ch/user/h/hbossi/RooUnfold/:$LD_LIBRARY_PATH
-  ./Execute
+  ./ExecuteTrivial
  */
 
 
@@ -67,7 +67,7 @@ const double Rjet = 0.4;
 void FillChain(TChain &chain, std::vector<std::string> &files); 
 void GetFiles(char const *input, std::vector<std::string> &files); 
 void Normalize2D(TH2* h); 
-void RooSimplepTPbPb_split(); 
+void RooSimplepTPbPb_trivial(); 
    
 // fill the tchain
 void FillChain(TChain &chain, std::vector<std::string> &files) {
@@ -135,7 +135,7 @@ void Normalize2D(TH2* h)
 // Example Unfolding
 //==============================================================================
 
-void RooSimplepTPbPb_split(){
+void RooSimplepTPbPb_trivial(){
 #ifdef __CINT__
   gSystem->Load("libRooUnfold");
 #endif
@@ -190,9 +190,6 @@ void RooSimplepTPbPb_split(){
   hcovariance=new TH2D("covariance","covariance",5,0.,1.,5,0,1.);
   hcovariance->Sumw2(); 
 
-<<<<<<< HEAD
-  Int_t nEv=0;
-=======
   TH1D *effnum=(TH1D*)h1fulleff->Clone("effnum");
   TH1D *effdenom=(TH1D*)h1fulleff->Clone("effdenom");
   effnum->Sumw2();
@@ -203,12 +200,10 @@ void RooSimplepTPbPb_split(){
 
   Int_t nEv=0;
 
->>>>>>> 0723PRBranch
 
   std::vector<std::string> files;
- //GetFiles(input, files);
-  files.push_back("/eos/cms/store/group/phys_heavyions/hbossi/mc_productions/QCD-dijet_pThat15-event-weighted_TuneCP5_5p36TeV_pythia8/OO_MC_DijetEmbedded_pThat-15to1200_TuneCP5_5p36TeV_pythia8/260306_002843/0000/HiForestMiniAOD_1.root");
- // std::cout << "Get the files " << std::endl;
+  GetFiles(input, files);
+  std::cout << "Get the files " << std::endl;
 
 
   /* read in event information */
@@ -256,10 +251,6 @@ void RooSimplepTPbPb_split(){
   responsenotrunc.Setup(h1smearednocuts,h1fulleff);
   
   Long64_t totalEvents = jetReader.GetEntries(true);
-<<<<<<< HEAD
-  float smallestw = 0;
-=======
->>>>>>> 0723PRBranch
   for (Long64_t i = 0; i < totalEvents; i++) {
     jetReader.Next(); eventReader.Next(); trigReader.Next(); hiEventReader.Next();
 
@@ -269,17 +260,11 @@ void RooSimplepTPbPb_split(){
     if(*vertexFilter == 0 || *clusterFilter == 0) continue; // event filters
     //------------------------------------------------------
     /* get the event weight we wil apply to each event */
-<<<<<<< HEAD
-    float w = 1.0/pow(2,35);
-
-    if (smallestw == 0 || *weight < smallestw) {
-          smallestw = *weight;
-        }
-
-=======
     double w = *weight;
    
->>>>>>> 0723PRBranch
+  
+    //std::cout << "weight before rounding: " << *weight << " weight after rounding " << w << std::endl;
+
     /* now loop over jets and fill the response */
     for (int j = 0; j < *jetN; ++ j) {
       // jet kinematic and quality selections
@@ -296,41 +281,22 @@ void RooSimplepTPbPb_split(){
       h1smearednocuts->Fill(jetPt[j],w);  
       responsenotrunc.Fill(jetPt[j],genJetPt[j],w);
       
-      /* do the splitting that corresponds to the split test */
-      double split = rand->Rndm();
-      //if (split < 0.5){
-	      h1smeared->Fill(jetPt[j],w);
-	      //this is the half split to be the response 
-	      response.Fill(jetPt[j],genJetPt[j],w);
-	    //}
-     // else {
-        //this is the psuedo data!
-        h1raw->Fill(jetPt[j], w);
-        //this is the generator level distribution for the pseudo data or our answer :)
-        h1true->Fill(genJetPt[j],w);
-<<<<<<< HEAD
-	  //}
-=======
-	    }
->>>>>>> 0723PRBranch
-    
+      h1smeared->Fill(jetPt[j],w);
+      response.Fill(jetPt[j],genJetPt[j],w);
+      h1raw->Fill(jetPt[j], w);
+      h1true->Fill(genJetPt[j],w);
+
+
     } // end loop over the number of jets
   } // end loop over the number of events
  
-<<<<<<< HEAD
-
-    TH1F *htrueptd=(TH1F*) h1fulleff->Clone("trueptd");
-    TH1F *htruept=(TH1F*) h1fulleff->Clone( "truept");
-
-=======
     
     TH1D *htrueptd=(TH1D*) h1fulleff->Clone("trueptd");
     TH1D *htruept=(TH1D*) h1fulleff->Clone( "truept"); 
  
->>>>>>> 0723PRBranch
     //////////efficiencies done////////////////////////////////////
  
-    TFile *fout=new TFile (Form("UnfoldingSplit5050_R040_Test.root"),"RECREATE");
+    TFile *fout=new TFile (Form("UnfoldingTrivial_R040_Test.root"),"RECREATE");
     fout->cd();
     h1raw->SetName("raw");
     h1raw->Write();
@@ -339,33 +305,11 @@ void RooSimplepTPbPb_split(){
     htrueptd->Write();
     h1true->SetName("true");
     h1true->Write();
-    response.Write("response");
     TH1D* htruth = (TH1D*)response.Htruth();
     htruth->SetName("htruth");
     htruth->Write();
 
-<<<<<<< HEAD
-    TH1D* hRecoResponse = (TH1D*)response.Hmeasured();
-
-    RooUnfoldBayes unfold_trivial(&response, hRecoResponse, 1,false);    // OR
-    TH1D* hUnfolded_trivial= (TH1D*) unfold_trivial.Hreco();
-    hUnfolded_trivial->SetName("Bayesian_UnfoldedTrivial");
-    hUnfolded_trivial->Write();
-
-    cout << "Ratio of Unfolded Gen to Response Gen in the trivial test:" << endl;
-    for (int i = 1; i <= hUnfolded_trivial->GetNbinsX(); ++i) {
-      float unfolded_gen = hUnfolded_trivial->GetBinContent(i);
-      float gen_value = htruth->GetBinContent(i);
-
-      cout << Form("Bin %d: Ratio = %.16f", i, gen_value > 0 ? unfolded_gen/gen_value : 0) << endl;
-    }
-
-    cout << "smallest weight: " << smallestw << endl;
-
-   /*for(int jar=1;jar<10;jar++){
-=======
     for(int jar=1;jar<10;jar++){
->>>>>>> 0723PRBranch
       Int_t iter=jar;
       cout<<"iteration"<<iter<<endl;
       cout<<"==============Unfold h1====================="<<endl;
@@ -383,12 +327,12 @@ void RooSimplepTPbPb_split(){
 
       htempUnf->Write();
       htempFold->Write();
-    }*/
-    
+    }
+
     // close the output file
     fout->Close();
 	  
 }
 #ifndef __CINT__
-int main () { RooSimplepTPbPb_split(); return 0; }  // Main program when run stand-alone
+int main () { RooSimplepTPbPb_trivial(); return 0; }  // Main program when run stand-alone
 #endif
