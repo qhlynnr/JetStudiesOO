@@ -2,7 +2,7 @@
 
 MC=0
 neventcut=0 # 0 for full
-outfolder="PPRef/0723Testing/Data/"
+outfolder="PPRef/0725SU24_sequential/Data/test/"
 logpath="../../../RootFiles/${outfolder}/log/"
 tag2=""
 # pt bins
@@ -70,8 +70,10 @@ for tag in "${!inputs[@]}"; do
             $outfiletag \
             $jetTreeName \
             $jetVetoMap \
-            $CorrectionFileL2Relative \
-            $CorrectionFileL2L3Residual \
+            $CorrectionFileNewL1FastJet \
+            $CorrectionFileNewL2Relative \
+            $CorrectionFileNewL3Absolute \
+            $CorrectionFileNewL2L3Residual \
            > $logpath/executable_MC${MC}_${tag2}_${tag}.log 2>&1 &
     done
 done

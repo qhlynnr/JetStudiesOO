@@ -2,8 +2,8 @@
 
 MC=1
 neventcut=0 # 0 for full
-outfolder="PPRef/0722_CorrectJetID_SU24Correction_CorrectCode/MC/"
-logpath="/home/xirong/JetStudiesOO/LynnsCode/RootFiles/${outfolder}/log/"
+outfolder="PPRef/0725SU24_sequential/MC/test/"
+logpath="/home/xirong/JetStudiesOO/PPRef/RootFiles/${outfolder}/log/"
 tagMC2=""
 # pt bins
 ptbins=(
@@ -48,7 +48,9 @@ for tagMC in "${!inputsMC[@]}"; do
             $outfiletag \
             $jetTreeName \
             $jetVetoMap \
-            $CorrectionFileL2Relative \
+            $CorrectionFileNewL1FastJet \
+            $CorrectionFileNewL2Relative \
+            $CorrectionFileNewL3Absolute \
             > $logpath/executable_MC${MC}_${tagMC2}_${tagMC}.log 2>&1 &
     done
 done
