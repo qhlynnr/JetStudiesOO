@@ -24,6 +24,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <TSystem.h>
 
 struct BlockCaptionInfo{
   std::vector<std::string> text;
@@ -219,18 +220,21 @@ int drawComparison(){
     // CONFIG: edit these paths/labels to match your 4 pT bins
     // ---------------------------------------------------------------
     string outfolder = "/home/xirong/JetStudiesOO/LynnsCode/Plots/PPRefQAPlots/Comparisons/";
-    string dataFolder = "/home/xirong/JetStudiesOO/LynnsCode/RootFiles/PPRef/070926PPRefMCData/Test/";
-    string mcFolder    = "/home/xirong/JetStudiesOO/LynnsCode/RootFiles/PPRef/070926PPRefMCData/Test/";
-
+    string dataFolder = "/home/xirong/JetStudiesOO/PPRef/RootFiles/PPRef/0725L2Corr/Data/test/";
+    string mcFolder    = "/home/xirong/JetStudiesOO/PPRef/RootFiles/PPRef/0725L2Corr/MC/test/";
+    string mcdataFolder  = outfolder + "mcdata/";
+    string recogenFolder = outfolder + "recogen/";
+    gSystem->mkdir(mcdataFolder.c_str(), true);
+    gSystem->mkdir(recogenFolder.c_str(), true);
     std::vector<string> dataFiles = {
-      dataFolder + "Data_100.0KEvts_1000evt_30to1000GEV_20260710.root",
+      dataFolder + "Data_199.6MEvts_PD0_pt30to1000_20260726.root",
     //  dataFolder + "Data_bin2_80to100GEV.root",
    //   dataFolder + "Data_bin3_100to300GEV.root",
     //  dataFolder + "Data_bin4_300to700GEV.root",
     };
 
     std::vector<string> mcFiles = {
-      mcFolder + "MC_100.0KEvts_MC_test_Pt30to1000_30to1000GEV_20260710.root",
+      mcFolder + "MC_59.9MEvts_MC_pt30to1000_20260726.root",
    //   mcFolder + "MC_bin2_80to100GEV.root",
    //   mcFolder + "MC_bin3_100to300GEV.root",
    //   mcFolder + "MC_bin4_300to700GEV.root",
@@ -380,7 +384,73 @@ int drawComparison(){
               true);
       }
     }
+    // ---------------------------------------------------------------
+    // MC Reco vs Ref vs Gen (MC file only - Data has no ref/gen)
+    // Covers correctedpt, eta, phi, rg, zg, kt. hjtpt is never filled
+    // and hrawpt has no direct ref/gen equivalent worth plotting
+    // separately, so both are excluded here.
+    // ---------------------------------------------------------------
+    std::vector<size_t> refGenRecoIdx    = {1, 2, 3, 4, 5, 6}; // indices into obsNames/xTitles/xranges/yranges/logy: correctedpt,eta,phi,rg,zg,kt
+    std::vector<std::string> refObsNames = {"hrefpt", "hrefeta", "hrefphi", "hrefrg", "hrefzg", "hrefkt"};
+    std::vector<std::string> genObsNames = {"hgenpt", "hgeneta", "hgenphi", "hgenrg", "hgenzg", "hgenkt"};
 
+    std::vector<std::vector<TH1*>> refHists(refObsNames.size(), std::vector<TH1*>(nBins, nullptr));
+    std::vector<std::vector<TH1*>> genHists(genObsNames.size(), std::vector<TH1*>(nBins, nullptr));
+
+    for (size_t obs = 0; obs < refObsNames.size(); ++obs) {
+      for (size_t i = 0; i < nBins; ++i) {
+        std::string refPath = "JetLevelHistRaw/" + refObsNames[obs];
+        std::string genPath = "JetLevelHistRaw/" + genObsNames[obs];
+        refHists[obs][i] = (TH1*) fMC[i]->Get(refPath.c_str());
+        genHists[obs][i] = (TH1*) fMC[i]->Get(genPath.c_str());
+
+        if (!refHists[obs][i]) {
+          cout << "WARNING: missing " << refPath << " in MC file " << mcFiles[i]
+               << " - skipping ref/gen comparison for this obs/bin." << endl;
+        } else {
+          refHists[obs][i]->SetDirectory(0);
+        }
+        if (!genHists[obs][i]) {
+          cout << "WARNING: missing " << genPath << " in MC file " << mcFiles[i]
+               << " - skipping ref/gen comparison for this obs/bin." << endl;
+        } else {
+          genHists[obs][i]->SetDirectory(0);
+        }
+      }
+    }
+
+    for (auto& row : refHists) for (auto h : row) if (h) StyleHist(h, kGreen+2, 23);
+    for (auto& row : genHists) for (auto h : row) if (h) StyleHist(h, kBlue+1, 24);
+
+    for (size_t obs = 0; obs < refObsNames.size(); ++obs) {
+      size_t recoIdx = refGenRecoIdx[obs]; // matching index in obsNames/xTitles/xranges/yranges/logy
+      for (size_t i = 0; i < nBins; ++i) {
+        TH1* hRef  = refHists[obs][i];
+        TH1* hGen  = genHists[obs][i];
+        TH1* hReco = mc[recoIdx][i]; // reco hist already loaded/styled in the Data-vs-MC loop above
+        if (!hRef || !hGen || !hReco) continue;
+
+        BlockCaptionInfo captionInfo;
+        captionInfo.text = captionInfoByBin[i];
+        captionInfo.x = 0.25;
+        captionInfo.y = 0.85;
+        captionInfo.size = 0.030;
+        captionInfo.spacing = 0.025;
+        captionInfo.useNDC = true;
+
+        DrawAndSaveWithRatio({hRef, hReco, hGen},
+              {"Ref", "Jet Reco", "Gen"},
+              recogenFolder + obsNames[recoIdx] + "_" + binLabels[i] + "_recorefgen_comp.png",
+              xTitles[recoIdx],
+              Form("dN/d%s", xTitles[recoIdx].c_str()),
+              std::string("MC Reco/Ref/Gen comparison: ") + xTitles[recoIdx] + " in " + binLabels[i],
+              xranges[recoIdx].first, xranges[recoIdx].second,
+              yranges[recoIdx].first, yranges[recoIdx].second,
+              false, logy[recoIdx],
+              captionInfo,
+              true);
+      }
+    }
     // ---------------------------------------------------------------
     // Raw vs Corrected pT, within each dataset (Data and MC separately)
     // ---------------------------------------------------------------
